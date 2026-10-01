@@ -1,0 +1,366 @@
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ff5e3a;
+}
+@property --accent-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffb36b;
+}
+
+:root {
+  --bg: #0c0a0b;
+  --ink: #f4eee9;
+  --soft: rgba(244, 238, 233, 0.55);
+  --faint: rgba(244, 238, 233, 0.14);
+  --font: 'Outfit Variable', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  touch-action: none;
+  cursor: none;
+}
+
+.app {
+  position: relative;
+  width: 800px;
+  height: 480px;
+  overflow: hidden;
+  transition:
+    --accent 1.2s ease,
+    --accent-2 1.2s ease;
+}
+.phase-focus {
+  --accent: #ff5e3a;
+  --accent-2: #ffb36b;
+}
+.phase-short {
+  --accent: #22c99a;
+  --accent-2: #b4f5d2;
+}
+.phase-long {
+  --accent: #5b7cff;
+  --accent-2: #c3a6ff;
+}
+
+/* ambient light */
+.glow,
+.flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glow {
+  background:
+    radial-gradient(circle at 240px 240px, color-mix(in srgb, var(--accent) 34%, transparent) 0, transparent 330px),
+    radial-gradient(circle at 760px -40px, color-mix(in srgb, var(--accent-2) 14%, transparent) 0, transparent 360px);
+  opacity: 0.55;
+  transition: opacity 0.8s ease;
+}
+.mode-running .glow {
+  opacity: 1;
+}
+.flash {
+  background: radial-gradient(circle at 240px 240px, var(--accent-2) 0, var(--accent) 40%, transparent 75%);
+  opacity: 0;
+  animation: flash 1.6s ease-out 3;
+}
+@keyframes flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* dial */
+.dial-wrap {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 440px;
+  height: 440px;
+}
+.dial {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.rim {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 1;
+}
+.tick {
+  stroke: rgba(244, 238, 233, 0.16);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.25s ease;
+}
+.tick.major {
+  stroke-width: 3;
+  stroke: rgba(244, 238, 233, 0.32);
+}
+.tick.lit {
+  stroke: var(--accent-2);
+}
+.tick.major.lit {
+  stroke: var(--ink);
+}
+.label {
+  fill: var(--soft);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 14;
+}
+.arc {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.3s linear,
+    opacity 0.3s ease;
+}
+.knob {
+  transform-origin: 220px 220px;
+  transform-box: view-box;
+  transition: transform 0.3s linear;
+}
+.knob-dot {
+  fill: #fff;
+}
+.knob-halo {
+  fill: var(--accent);
+  opacity: 0.35;
+}
+.mode-running .knob-halo {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    opacity: 0.1;
+  }
+}
+.hold {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dashoffset: var(--hold-len);
+  opacity: 0;
+}
+.hold.on {
+  opacity: 0.9;
+  animation: hold 0.7s linear forwards;
+}
+@keyframes hold {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.big {
+  font-size: 150px;
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.bump {
+  animation: bump 0.22s ease-out;
+}
+@keyframes bump {
+  from {
+    transform: scale(1.06);
+    opacity: 0.75;
+  }
+}
+.clock {
+  font-size: 92px;
+  font-weight: 250;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.mode-paused .clock {
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+.unit {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+/* side panel */
+.panel {
+  position: absolute;
+  left: 500px;
+  right: 36px;
+  top: 34px;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.now {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 22px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.ends {
+  font-size: 14px;
+  color: var(--soft);
+  letter-spacing: 0.04em;
+}
+.mode-idle .ends {
+  opacity: 0.6;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+h1 {
+  margin: 6px 0 16px;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+.dots {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--faint);
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease;
+}
+.dot.done {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.dot.live {
+  border-color: var(--accent);
+  animation: breathe 2.4s ease-in-out infinite;
+}
+.progress-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--faint);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform-origin: left;
+  transition: transform 0.3s linear;
+}
+.today {
+  display: flex;
+  gap: 28px;
+}
+.today div {
+  display: flex;
+  flex-direction: column;
+}
+.today b {
+  font-size: 28px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.today span {
+  font-size: 13px;
+  color: var(--soft);
+}
+.hints {
+  list-style: none;
+  margin: 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--faint);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--soft);
+}
+.hints li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ico {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--soft);
+}
+.ico-turn {
+  border-top-color: transparent;
+  transform: rotate(45deg);
+}
+.ico-press::after,
+.ico-hold::after {
+  content: '';
+  position: absolute;
+  inset: 3.5px;
+  border-radius: 50%;
+  background: var(--soft);
+}
+.ico-hold {
+  border-width: 3px;
+}
+.ico-hold::after {
+  inset: 2px;
+}

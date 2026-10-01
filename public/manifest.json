@@ -1,0 +1,9 @@
+{
+  "id": "54868c4c-1a36-4680-a16b-426eb379f171",
+  "name": "Pomodoro",
+  "version": "0.1.0",
+  "description": "Focus timer. Turn the wheel to set the time, press to start.",
+  "icon": "icon.svg",
+  "config": [],
+  "permissions": []
+}
