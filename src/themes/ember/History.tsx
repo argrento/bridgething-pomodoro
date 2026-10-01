@@ -1,4 +1,5 @@
-import { dayTotals, formatDuration, localDay, streak, type HistoryEntry } from './timer';
+import type { HistoryView } from '../types';
+import { dayTotals, formatDuration, localDay, streak } from '../../timer';
 
 const DAYS = 7;
 const CHART_W = 470;
@@ -32,15 +33,7 @@ const hhmm = (t: number) => {
  * Seven-day view of the on-device session log. `selected` counts days back
  * from today; the window scrolls so the selected day is always on screen.
  */
-export default function History({
-  history,
-  now,
-  selected,
-}: {
-  history: HistoryEntry[];
-  now: number;
-  selected: number;
-}) {
+export default function History({ history, now, selected, knob }: HistoryView) {
   // Window: the 7 days ending at the newest day that keeps `selected` visible.
   const windowEnd = Math.floor(selected / DAYS) * DAYS;
   const days = Array.from({ length: DAYS }, (_, i) => {
@@ -65,6 +58,8 @@ export default function History({
   const entries = history.filter(e => localDay(e.start) === sel.key).reverse();
 
   return (
+    <div className="app phase-focus" {...knob}>
+      <div className="glow" />
     <div className="history">
       <header className="h-head">
         <div>
@@ -156,6 +151,7 @@ export default function History({
       </aside>
 
       <footer className="h-hint">Turn to browse days · Press to close</footer>
+    </div>
     </div>
   );
 }

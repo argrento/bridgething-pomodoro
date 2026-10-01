@@ -1,0 +1,346 @@
+@keyframes eink-hold {
+  to {
+    width: 420px;
+  }
+}
+@keyframes eink-refresh {
+  0% {
+    opacity: 1;
+    background: #000;
+  }
+  30% {
+    opacity: 1;
+    background: #fff;
+  }
+  55% {
+    opacity: 0;
+  }
+}
+
+.theme-eink {
+& {
+  /* e-ink: warm grey paper, one ink, no colour, no motion */
+  --paper: #ebe8df;
+  --ink: #1c1b19;
+  --grey: #6e6b64;
+  --hair: rgba(28, 27, 25, 0.22);
+  --serif: 'Literata Variable', Georgia, serif;
+}
+& * {
+  box-sizing: border-box;
+}
+& {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  user-select: none;
+  touch-action: none;
+  cursor: none;
+}
+.page {
+  position: relative;
+  width: 800px;
+  height: 480px;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--paper);
+  /* static paper grain, rasterised once */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+.sc {
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+}
+.masthead {
+  position: absolute;
+  top: 14px;
+  left: 36px;
+  right: 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 15px;
+}
+/* the page */
+.leaf {
+  position: absolute;
+  left: 36px;
+  top: 60px;
+  width: 450px;
+  height: 400px;
+}
+.kicker {
+  font-size: 15px;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+}
+.kicker em {
+  font-variant: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--grey);
+}
+.numeral {
+  position: relative;
+  margin-top: 2px;
+  font-size: 208px;
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.numeral .ink {
+  position: relative;
+}
+/* e-ink ghosting: the last value has not quite cleared */
+.ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0.055;
+}
+.caption {
+  margin-top: 2px;
+  font-size: 21px;
+  font-style: italic;
+  color: var(--grey);
+}
+.hold-rule {
+  width: 0;
+  height: 2px;
+  margin-top: 10px;
+  background: var(--ink);
+}
+.hold-rule.on {
+  animation: eink-hold 0.7s steps(4, end) forwards;
+}
+.minutes {
+  display: grid;
+  grid-template-columns: repeat(30, 10px);
+  gap: 5px 4px;
+  margin-top: 16px;
+}
+.minutes i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.2px solid var(--ink);
+}
+.minutes i.full {
+  background: var(--ink);
+}
+/* the margin column */
+.margin {
+  position: absolute;
+  left: 524px;
+  right: 36px;
+  top: 64px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.notice {
+  margin-bottom: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--ink);
+  font-size: 13px;
+  line-height: 1.38;
+}
+.notice.behind {
+  background: var(--ink);
+  color: var(--paper);
+}
+.notice b {
+  font-weight: 600;
+}
+dl {
+  margin: 0;
+}
+dt {
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px solid var(--hair);
+  font-size: 12.5px;
+  color: var(--grey);
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+}
+dt:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+dd {
+  margin: 1px 0 0;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+}
+.squares {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 12px;
+}
+.squares i {
+  width: 11px;
+  height: 11px;
+  border: 1.2px solid var(--ink);
+}
+.squares i.done {
+  background: var(--ink);
+}
+.squares i.live {
+  background: repeating-linear-gradient(45deg, var(--ink) 0 1.5px, transparent 1.5px 3.5px);
+}
+.colophon {
+  margin: auto 0 0;
+  font-size: 12.5px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--grey);
+}
+/* a full e-ink refresh: black, white, then the page again */
+.refresh {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  animation: eink-refresh 0.9s steps(1, end) 2;
+}
+/* insights */
+.insights {
+  position: absolute;
+  inset: 0;
+}
+.ins-title {
+  position: absolute;
+  left: 36px;
+  top: 56px;
+}
+.ins-title h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.sub {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--grey);
+}
+.ins-stats {
+  position: absolute;
+  right: 36px;
+  top: 64px;
+  display: flex;
+  gap: 30px;
+}
+.ins-stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.ins-stats b {
+  font-size: 27px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.ins-stats span {
+  font-size: 12.5px;
+  color: var(--grey);
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+}
+.ins-chart {
+  position: absolute;
+  left: 36px;
+  top: 150px;
+  overflow: visible;
+}
+.ink-fill, .bar.sel {
+  fill: var(--ink);
+}
+.baseline {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.ins-chart text {
+  font-family: var(--serif);
+}
+.bar-val {
+  fill: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+.day {
+  fill: var(--grey);
+  font-size: 13px;
+}
+.date {
+  fill: var(--grey);
+  font-size: 11.5px;
+}
+.day.sel, .date.sel {
+  fill: var(--ink);
+  font-weight: 600;
+}
+.ins-day {
+  position: absolute;
+  left: 524px;
+  right: 36px;
+  top: 160px;
+}
+.day-total {
+  margin: 3px 0 10px;
+  font-size: 20px;
+}
+.ins-day ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+}
+.ins-day li {
+  display: flex;
+  gap: 12px;
+  padding: 5px 0;
+  border-top: 1px solid var(--hair);
+}
+.ins-day li em {
+  margin-left: auto;
+  color: var(--grey);
+}
+.ins-day li.stopped {
+  color: var(--grey);
+}
+.ins-day .more, .empty {
+  color: var(--grey);
+  font-style: italic;
+}
+.empty {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--hair);
+  font-size: 15px;
+}
+.ins-colophon {
+  position: absolute;
+  left: 36px;
+  bottom: 16px;
+}
+}

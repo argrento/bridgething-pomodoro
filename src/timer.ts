@@ -241,3 +241,9 @@ export function decodeHistory(json: string): HistoryEntry[] | null {
     return null;
   }
 }
+
+/** Local wall-clock time as HH:MM. */
+export function hhmm(t: number): string {
+  const d = new Date(t);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}

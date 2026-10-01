@@ -1,24 +1,20 @@
 import { BridgethingClient } from '@bridgething/client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Dial from './Dial';
-import { assessClock, formatDrift, TOLERANCE_MS } from './clock';
-import History from './History';
+import { assessClock, TOLERANCE_MS } from './clock';
+import Settings from './Settings';
+import { DEFAULT_THEME, themeById, THEMES } from './themes';
 import {
   complete,
   dayTotals,
   decodeHistory,
   encodeHistory,
-  formatClock,
-  formatDuration,
   hold,
   initialState,
   localDay,
-  PHASE_LABEL,
-  phaseMs,
   press,
   remainingMs,
-  SESSIONS_PER_SET,
   setPreset,
+  streak,
   turn,
   type HistoryEntry,
   type TimerState,
@@ -33,6 +29,11 @@ const HISTORY_KEY = 'pomodoro.history.v1';
 const CLOCK_KEY = 'pomodoro.clock-trust.v1';
 const PRESETS: Record<string, number> = { Digit1: 15, Digit2: 25, Digit3: 45 };
 const HISTORY_BUTTON = 'Digit4';
+/** The mic button on top of the Car Thing opens the design picker. */
+const SETTINGS_BUTTON = 'KeyM';
+/** The back button below the knob. */
+const BACK_BUTTON = 'Escape';
+const THEME_KEY = 'pomodoro.theme.v1';
 /** How far back the history view scrolls, in days. */
 const HISTORY_DAYS = 366;
 const CHIME_HINTS = ['complete', 'done', 'success', 'chime', 'notif', 'alert', 'ding'];
@@ -41,13 +42,19 @@ export default function App() {
   const client = useMemo(() => new BridgethingClient({ url: `ws://${window.location.host}/` }), []);
 
   const [state, setState] = useState<TimerState>(() => loadLocal() ?? initialState(Date.now()));
-  const [view, setView] = useState<'timer' | 'history'>('timer');
+  const [view, setView] = useState<'timer' | 'history' | 'settings'>('timer');
+  const [themeId, setThemeId] = useState<string>(() => readLocal(THEME_KEY) ?? DEFAULT_THEME);
+  const [picked, setPicked] = useState(0);
+  const pickedRef = useRef(picked);
+  pickedRef.current = picked;
   const [histSel, setHistSel] = useState(0);
   const [bootId, setBootId] = useState<string | null>(null);
   const [trustedBootId, setTrustedBootId] = useState<string | null>(() => readLocal(CLOCK_KEY));
   const [phoneDriftMs, setPhoneDriftMs] = useState<number | null>(null);
   const viewRef = useRef(view);
   viewRef.current = view;
+  const themeIdRef = useRef(themeId);
+  themeIdRef.current = themeId;
   const [now, setNow] = useState(() => Date.now());
   const [holding, setHolding] = useState(false);
   const [flash, setFlash] = useState(0);
@@ -86,6 +93,10 @@ export default function App() {
     client.system
       .diagnosticsGet()
       .then(r => !cancelled && r.ok && setBootId(r.response.diagnostics.bootId))
+      .catch(() => {});
+    client.store
+      .get({ key: THEME_KEY })
+      .then(r => !cancelled && r.ok && r.response.value && setThemeId(r.response.value))
       .catch(() => {});
     client.store
       .get({ key: CLOCK_KEY })
@@ -181,12 +192,31 @@ export default function App() {
       trustClock();
     }
   }, [bootId, trustedBootId, phoneDriftMs, trustClock]);
+  const applyTheme = useCallback(
+    (index: number) => {
+      const id = THEMES[index].id;
+      setThemeId(id);
+      setView('timer');
+      try {
+        localStorage.setItem(THEME_KEY, id);
+      } catch {}
+      client.store.put({ key: THEME_KEY, value: id }).catch(() => {});
+    },
+    [client],
+  );
+  const toggleSettings = useCallback(() => {
+    setView(v => {
+      if (v === 'settings') return 'timer';
+      setPicked(Math.max(0, THEMES.findIndex(t => t.id === themeIdRef.current)));
+      return 'settings';
+    });
+  }, []);
   const toggleHistory = useCallback(() => {
     setHistSel(0);
     setView(v => (v === 'timer' ? 'history' : 'timer'));
   }, []);
   const pressDown = useCallback(() => {
-    if (viewRef.current === 'history') {
+    if (viewRef.current !== 'timer') {
       closing.current = true;
       return;
     }
@@ -202,7 +232,8 @@ export default function App() {
   const pressUp = useCallback(() => {
     if (closing.current) {
       closing.current = false;
-      setView('timer');
+      if (viewRef.current === 'settings') applyTheme(pickedRef.current);
+      else setView('timer');
       return;
     }
     if (holdTimer.current === null) return;
@@ -210,7 +241,7 @@ export default function App() {
     holdTimer.current = null;
     setHolding(false);
     if (!held.current) doPress();
-  }, [doPress]);
+  }, [doPress, applyTheme]);
 
   useEffect(() => {
     let carry = 0;
@@ -219,6 +250,10 @@ export default function App() {
       const steps = Math.trunc(total / DETENT) || 0;
       carry = total - steps * DETENT;
       if (!steps) return;
+      if (viewRef.current === 'settings') {
+        setPicked(p => (((p + steps) % THEMES.length) + THEMES.length) % THEMES.length);
+        return;
+      }
       if (viewRef.current === 'history') {
         // Clockwise moves forward in time, toward today.
         setHistSel(d => Math.min(HISTORY_DAYS, Math.max(0, d - steps)));
@@ -231,8 +266,13 @@ export default function App() {
       if (e.code === 'Enter' || e.code === 'Space') {
         e.preventDefault();
         if (!e.repeat) pressDown();
+      } else if (e.code === SETTINGS_BUTTON) {
+        toggleSettings();
+      } else if (e.code === BACK_BUTTON) {
+        setView('timer');
       } else if (e.code === HISTORY_BUTTON) {
-        toggleHistory();
+        if (viewRef.current === 'settings') setView('timer');
+        else toggleHistory();
       } else if (PRESETS[e.code] && viewRef.current === 'timer') {
         setState(s => setPreset(s, PRESETS[e.code]));
         setBump(b => b + 1);
@@ -249,17 +289,9 @@ export default function App() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [pressDown, pressUp, toggleHistory]);
+  }, [pressDown, pressUp, toggleHistory, toggleSettings]);
 
   const left = remainingMs(state, now);
-  const total = phaseMs(state);
-  const endsAt = state.mode === 'running' ? state.endsAt : now + left;
-  const dots = Array.from({ length: SESSIONS_PER_SET }, (_, i) => {
-    if (i < state.cycle) return 'done';
-    if (i === state.cycle && state.phase === 'focus' && state.mode !== 'idle') return 'live';
-    return '';
-  });
-  const today = dayTotals(history, localDay(now));
   const clockStatus = assessClock({
     phoneDriftMs,
     lastLoggedEnd: history.length ? history[history.length - 1].end : null,
@@ -267,134 +299,39 @@ export default function App() {
     bootId,
     trustedBootId,
   });
-
-  if (view === 'history') {
-    return (
-      <div className={`app phase-focus`} onPointerDown={pressDown} onPointerUp={pressUp}>
-        <div className="glow" />
-        <History history={history} now={now} selected={histSel} />
-      </div>
-    );
-  }
+  // While picking, the screen behind the picker is the live preview.
+  const theme = view === 'settings' ? THEMES[picked] : themeById(themeId);
+  const knob = { onPointerDown: pressDown, onPointerUp: pressUp, onPointerLeave: pressUp };
 
   return (
-    <div className={`app phase-${state.phase} mode-${state.mode}`}>
-      <div className="glow" />
-      <div key={flash} className={flash ? 'flash' : ''} />
-
-      <div
-        className="dial-wrap"
-        onPointerDown={pressDown}
-        onPointerUp={pressUp}
-        onPointerLeave={pressUp}
-      >
-        <Dial minutes={left / 60_000} holding={holding} />
-        <div className="center">
-          {state.mode === 'idle' ? (
-            <>
-              <div key={bump} className="big bump">
-                {state.settings[state.phase]}
-              </div>
-              <div className="unit">{state.settings[state.phase] === 1 ? 'minute' : 'minutes'}</div>
-            </>
-          ) : (
-            <>
-              <div className="clock">{formatClock(left)}</div>
-              <div className="unit">{state.mode === 'paused' ? 'paused' : PHASE_LABEL[state.phase]}</div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <aside className="panel">
-        {clockStatus.kind === 'ok' ? (
-          <div className="now">
-            <span>{clock(now)}</span>
-            <span className="ends">
-              {state.mode === 'paused' ? 'on hold' : `ends ${clock(endsAt)}`}
-            </span>
-          </div>
+    <div className="stage">
+      <div className={`theme-${theme.id}`}>
+        {view === 'history' ? (
+          <theme.History history={history} now={now} selected={histSel} knob={knob} />
         ) : (
-          <div
-            className={`clock-warn ${clockStatus.kind}`}
-            onClick={clockStatus.kind === 'unverified' ? trustClock : undefined}
-          >
-            <i className="warn-ico">!</i>
-            <div>
-              <b>
-                {clockStatus.kind === 'behind'
-                  ? `Clock is ${formatDrift(clockStatus.behindMs)} behind`
-                  : `Clock may be wrong · ${clock(now)}`}
-              </b>
-              <span>
-                {clockStatus.kind === 'behind'
-                  ? 'History dates will be off. Connect phone to sync.'
-                  : 'Device was powered off. Tap if the time is right.'}
-              </span>
-            </div>
-          </div>
+          <theme.Timer
+            state={state}
+            now={now}
+            left={left}
+            endsAt={state.mode === 'running' ? state.endsAt : now + left}
+            today={dayTotals(history, localDay(now))}
+            streak={streak(history, now)}
+            history={history}
+            clock={clockStatus}
+            holding={holding}
+            flash={flash}
+            bump={bump}
+            knob={knob}
+            trustClock={trustClock}
+            toggleHistory={toggleHistory}
+          />
         )}
-
-        <div className="phase">
-          <div className="eyebrow">
-            {state.mode === 'idle' ? (state.phase === 'focus' ? 'Ready' : 'Up next') : 'Now'}
-          </div>
-          <h1>{PHASE_LABEL[state.phase]}</h1>
-          <div className="dots">
-            {dots.map((d, i) => (
-              <span key={i} className={`dot ${d}`} />
-            ))}
-          </div>
-          <div className="progress-track">
-            <div
-              className="progress-fill"
-              style={{ transform: `scaleX(${state.mode === 'idle' ? 0 : 1 - left / total})` }}
-            />
-          </div>
-        </div>
-
-        <div className="today" onClick={toggleHistory}>
-          <div>
-            <b>{today.sessions}</b>
-            <span>{today.sessions === 1 ? 'session' : 'sessions'}</span>
-          </div>
-          <div>
-            <b>{formatDuration(today.minutes)}</b>
-            <span>focused today</span>
-          </div>
-        </div>
-
-        <ul className="hints">
-          <li>
-            <i className="ico ico-turn" />
-            {state.mode === 'idle' ? 'Turn to set time' : 'Turn to add or remove a minute'}
-          </li>
-          <li>
-            <i className="ico ico-press" />
-            {state.mode === 'running' ? 'Press to pause' : state.mode === 'paused' ? 'Press to resume' : 'Press to start'}
-          </li>
-          <li>
-            <i className="ico ico-hold" />
-            {state.mode !== 'idle'
-              ? 'Hold to stop'
-              : state.phase !== 'focus'
-                ? 'Hold to skip break'
-                : 'Hold to reset set'}
-          </li>
-          <li>
-            <i className="ico ico-key">4</i>
-            Button 4 for history
-          </li>
-        </ul>
-      </aside>
+      </div>
+      {view === 'settings' && <Settings picked={picked} current={themeId} onPick={applyTheme} />}
     </div>
   );
 }
 
-function clock(t: number) {
-  const d = new Date(t);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
 
 /** Timer state without history; fields added since a save fall back to defaults. */
 function parse(json: string): TimerState | null {

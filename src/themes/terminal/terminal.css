@@ -1,0 +1,150 @@
+@font-face {
+  font-family: 'JBM';
+  src: url('../../../node_modules/jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'JBM';
+  src: url('../../../node_modules/jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Bold.woff2') format('woff2');
+  font-weight: 700;
+}
+@keyframes terminal-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes terminal-fill {
+  to {
+    width: 10ch;
+  }
+}
+@keyframes terminal-bell {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.theme-terminal {
+& {
+  --bg: #0a0905;
+  /* phosphor per phase: amber P3, green P1, cyan */
+  --fg: #ffb000;
+}
+& * {
+  box-sizing: border-box;
+}
+& {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  user-select: none;
+  touch-action: none;
+  cursor: none;
+}
+.app {
+  position: relative;
+  width: 800px;
+  height: 480px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  /* 0.6em advance × 16.667px = exactly 10px per cell; 24 rows × 20px = 480 */
+  font-family: 'JBM', monospace;
+  font-size: 16.6667px;
+  line-height: 20px;
+  font-variant-ligatures: none;
+  text-shadow: 0 0 5px color-mix(in srgb, var(--fg) 55%, transparent);
+  -webkit-font-smoothing: antialiased;
+}
+.phase-focus {
+  --fg: #ffb000;
+}
+.phase-short {
+  --fg: #3dff7a;
+}
+.phase-long {
+  --fg: #4ddfff;
+}
+.t {
+  position: absolute;
+  left: calc(var(--x) * 10px);
+  top: calc(var(--y) * 20px);
+  height: 20px;
+  white-space: pre;
+}
+.dim {
+  opacity: 0.45;
+}
+.faded {
+  opacity: 0.6;
+}
+.inv {
+  background: var(--fg);
+  color: var(--bg);
+  text-shadow: none;
+}
+.t.inv {
+  width: 800px;
+}
+.key, .tag, .ok, .sel-row {
+  font-weight: 700;
+}
+.stop {
+  opacity: 0.55;
+}
+.cursor, .blink, .mode-paused .big .on {
+  animation: terminal-blink 1.06s steps(1, end) infinite;
+}
+/* big block digits */
+.big .off {
+  opacity: 0.07;
+  text-shadow: none;
+}
+.big .on {
+  text-shadow: 0 0 10px color-mix(in srgb, var(--fg) 70%, transparent);
+}
+.dial-hit {
+  position: absolute;
+  inset: 0 260px 260px 0;
+}
+.hold-bar {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  vertical-align: top;
+  animation: terminal-fill 0.7s steps(10, end) forwards;
+}
+.warn {
+  width: 800px;
+  background: #ff3b3b;
+  color: #0a0905;
+  text-shadow: none;
+  font-weight: 700;
+}
+/* visual bell: the whole screen inverts, three times */
+.bell {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  opacity: 0;
+  animation: terminal-bell 0.5s steps(1, end) 6;
+}
+/* CRT: scanlines + vignette, static */
+.crt {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.28) 2px 3px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+}

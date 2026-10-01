@@ -1,0 +1,360 @@
+@font-face {
+  font-family: 'CM';
+  src: url('../../../node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'CM';
+  src: url('../../../node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'CM';
+  src: url('../../../node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'CM Math';
+  src: url('../../../node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+@keyframes journal-flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes journal-bump {
+  from {
+    opacity: 0.4;
+  }
+}
+@keyframes journal-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes journal-hold {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.theme-journal {
+/* Computer Modern, via KaTeX's font files. */
+& {
+  --paper: #fbfaf6;
+  --ink: #141414;
+  --gray: #8a8a86;
+  --rule-heavy: 1.2px;
+  --rule-light: 0.7px;
+}
+& * {
+  box-sizing: border-box;
+}
+& {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'CM', 'Latin Modern Roman', 'Computer Modern', Georgia, serif;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  touch-action: none;
+  cursor: none;
+}
+i, .it {
+  font-family: 'CM Math', 'CM', serif;
+  font-style: italic;
+}
+.app {
+  position: relative;
+  width: 800px;
+  height: 480px;
+  overflow: hidden;
+  background: var(--paper);
+}
+/* completion: invert the page, like a flipped proof sheet */
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: #fff;
+  mix-blend-mode: difference;
+  opacity: 0;
+  animation: journal-flash 1.4s steps(1, end) 3;
+}
+/* running head */
+.runhead {
+  position: absolute;
+  top: 10px;
+  left: 22px;
+  right: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 4px;
+  border-bottom: var(--rule-light) solid var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.sc {
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+}
+.runhead i {
+  font-family: 'CM', serif;
+}
+/* Figure 1 */
+.fig {
+  position: absolute;
+  left: 10px;
+  top: 38px;
+  width: 466px;
+  margin: 0;
+}
+.figure {
+  display: block;
+  overflow: visible;
+}
+figcaption {
+  margin: 0 14px 0 18px;
+  font-size: 12.5px;
+  line-height: 1.32;
+  text-align: justify;
+  hyphens: auto;
+}
+.help {
+  stroke: var(--gray);
+  stroke-width: 0.5;
+}
+.axis {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.1;
+}
+.tick {
+  stroke: var(--ink);
+  stroke-width: 0.6;
+}
+.tick.major {
+  stroke-width: 1.1;
+}
+.tick-label {
+  font-family: 'CM', serif;
+  font-size: 13px;
+  fill: var(--ink);
+}
+.sector {
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+.mode-paused .sector {
+  opacity: 0.45;
+}
+.pat {
+  stroke: var(--ink);
+  stroke-width: 0.75;
+}
+.pat-dot, .ink-fill {
+  fill: var(--ink);
+}
+.hand {
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.node {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 0.9;
+}
+.node-main {
+  font-family: 'CM', serif;
+  font-size: 50px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.node-main.idle {
+  font-size: 62px;
+}
+.bump {
+  animation: journal-bump 0.2s ease-out;
+}
+.node-sub {
+  font-family: 'CM', serif;
+  font-style: italic;
+  font-size: 15px;
+  fill: var(--ink);
+}
+.mode-paused .node-main {
+  animation: journal-blink 1.6s steps(1, end) infinite;
+}
+.annot {
+  font-family: 'CM', serif;
+  font-size: 13px;
+  fill: var(--ink);
+}
+.hold {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-dashoffset: var(--hold-len);
+  opacity: 0;
+}
+.hold.on {
+  opacity: 1;
+  animation: journal-hold 0.7s linear forwards;
+}
+/* right column */
+.col {
+  position: absolute;
+  left: 496px;
+  right: 22px;
+  top: 46px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.secno {
+  display: inline-block;
+  min-width: 30px;
+}
+.abstract {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: justify;
+}
+.caption {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+th {
+  font-weight: 400;
+  text-align: left;
+  padding: 3px 4px 2px;
+  border-top: var(--rule-heavy) solid var(--ink);
+  border-bottom: var(--rule-light) solid var(--ink);
+}
+td {
+  padding: 1px 4px;
+}
+tbody tr:first-child td {
+  padding-top: 3px;
+}
+tbody tr:last-child td {
+  padding-bottom: 3px;
+}
+tfoot td {
+  padding: 2px 4px 3px;
+  border-top: var(--rule-light) solid var(--ink);
+  border-bottom: var(--rule-heavy) solid var(--ink);
+}
+.r {
+  text-align: right;
+}
+th i, td i {
+  font-family: 'CM', serif;
+}
+th .it, th i {
+  font-family: 'CM Math', serif;
+}
+/* algorithm2e / algorithmic float */
+.algo {
+  border-top: var(--rule-heavy) solid var(--ink);
+  border-bottom: var(--rule-heavy) solid var(--ink);
+}
+.algo-head {
+  margin: 0;
+  padding: 3px 0 2px;
+  border-bottom: var(--rule-light) solid var(--ink);
+}
+.algo ol {
+  list-style: none;
+  counter-reset: line;
+  margin: 0;
+  padding: 3px 0 4px;
+  font-size: 14px;
+}
+.algo li {
+  counter-increment: line;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.35;
+}
+.algo li::before {
+  content: counter(line) ':';
+  width: 18px;
+  font-size: 11px;
+  text-align: right;
+}
+.cmt {
+  margin-left: auto;
+}
+}
+
+.theme-journal {
+  .erratum {
+    padding: 4px 6px;
+    border: var(--rule-light) solid var(--ink);
+    font-size: 13px;
+  }
+  .erratum.behind {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .hist-fig .figure {
+    margin: 4px 0 2px;
+  }
+  .axis-line {
+    stroke: var(--ink);
+    stroke-width: 1.1;
+  }
+  .hbar {
+    stroke: var(--ink);
+    stroke-width: 0.9;
+  }
+  .hbar.sel {
+    fill: var(--ink);
+  }
+  .tick-label.sel {
+    font-weight: 700;
+  }
+  .tick-label.small {
+    font-size: 11px;
+    fill: var(--gray);
+  }
+  .roman {
+    font-family: 'CM', serif;
+  }
+  .hint {
+    margin: 0;
+    font-size: 12.5px;
+    font-style: italic;
+  }
+}
