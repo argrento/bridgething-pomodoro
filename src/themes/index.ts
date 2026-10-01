@@ -1,3 +1,5 @@
+import AsciiHistory from './ascii/History';
+import AsciiTimer from './ascii/Timer';
 import EinkHistory from './eink/History';
 import EinkTimer from './eink/Timer';
 import EmberHistory from './ember/History';
@@ -13,6 +15,7 @@ import SplitflapTimer from './splitflap/Timer';
 import TerminalHistory from './terminal/History';
 import TerminalTimer from './terminal/Timer';
 import type { Theme } from './types';
+import './ascii/ascii.css';
 import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
@@ -70,6 +73,14 @@ export const THEMES: Theme[] = [
     swatch: ['#110b07', '#ff8a2a'],
     Timer: NixieTimer,
     History: NixieHistory,
+  },
+  {
+    id: 'ascii',
+    name: 'ASCII campfire',
+    blurb: 'Text-art fire that burns down',
+    swatch: ['#06060c', '#ff8a1c'],
+    Timer: AsciiTimer,
+    History: AsciiHistory,
   },
   {
     id: 'journal',

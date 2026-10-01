@@ -1,0 +1,158 @@
+@font-face {
+  font-family: 'ASCII Mono';
+  src: url('../../../node_modules/jetbrains-mono/fonts/webfonts/JetBrainsMonoNL-Regular.woff2') format('woff2');
+}
+@keyframes ascii-hold {
+  to {
+    width: 10ch;
+  }
+}
+@keyframes ascii-ember {
+  50% {
+    color: #ff7a1a;
+    text-shadow: 0 0 8px rgba(255, 90, 0, 0.8);
+  }
+}
+
+.theme-ascii {
+  --night: #06060c;
+  --warm: #ffd8a6;
+  --muted: #6f6253;
+
+  .night {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    /* the fire lights the ground */
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 88%, rgba(255, 110, 30, 0.16), transparent 70%),
+      var(--night);
+    color: var(--warm);
+    font-family: 'ASCII Mono', monospace;
+    /* 0.6em advance: exactly 8 px per cell, 14 px per line */
+    font-size: 13.3333px;
+    line-height: 14px;
+    font-variant-ligatures: none;
+  }
+  .phase-short,
+  .phase-long,
+  .mode-idle.phase-focus {
+    --glow: 0.06;
+  }
+  pre {
+    margin: 0;
+    font: inherit;
+    white-space: pre;
+  }
+  .layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 800px;
+    pointer-events: none;
+  }
+  .sky {
+    color: #b9c3ff;
+    opacity: 0.55;
+  }
+  .fire {
+    /* colour by height: white-hot at the base, deep red at the tips */
+    background: linear-gradient(to top, #fff4c4 0%, #ffd34d 14%, #ff8a1c 34%, #e0441a 56%, #7a1608 80%, transparent 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sparks {
+    color: #ffb347;
+    text-shadow: 0 0 6px rgba(255, 140, 30, 0.9);
+  }
+  .smoke {
+    color: #8a8a96;
+    opacity: 0.6;
+  }
+  .logs {
+    color: #9a6634;
+  }
+  .phase-short .logs,
+  .phase-long .logs,
+  .mode-paused .logs {
+    animation: ascii-ember 2.4s ease-in-out infinite;
+  }
+  .ground {
+    color: #3c4a2a;
+  }
+
+  .countdown {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    /* larger cells for the big FIGlet digits */
+    font-size: 24px;
+    line-height: 24px;
+    color: #fff1dc;
+    text-shadow:
+      0 0 6px rgba(255, 170, 80, 0.55),
+      0 0 18px rgba(255, 110, 30, 0.35);
+  }
+  .mode-paused .countdown {
+    opacity: 0.6;
+  }
+  .corner {
+    position: absolute;
+    top: 150px;
+    color: var(--warm);
+    opacity: 0.85;
+  }
+  .corner.left {
+    left: 16px;
+  }
+  .corner.right {
+    right: 16px;
+    text-align: left;
+  }
+  .message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 434px;
+    text-align: center;
+    color: var(--warm);
+  }
+  .message.warn {
+    color: #ffb000;
+  }
+  .hold-fill {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    vertical-align: top;
+    animation: ascii-hold 0.7s steps(10, end) forwards;
+  }
+  .hints {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 458px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* woodpile */
+  .pile {
+    position: absolute;
+    left: 16px;
+    top: 120px;
+    color: #c08a52;
+  }
+  .logbook {
+    position: absolute;
+    left: 600px;
+    top: 120px;
+    color: var(--warm);
+  }
+  .woodpile .message {
+    top: 400px;
+  }
+}
