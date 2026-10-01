@@ -1,0 +1,383 @@
+@keyframes nixie-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes nixie-flicker {
+  0%,
+  91%,
+  93%,
+  95%,
+  100% {
+    opacity: 1;
+  }
+  92%,
+  94% {
+    opacity: 0.55;
+  }
+}
+@keyframes nixie-hold {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nixie-strike {
+  0%,
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.theme-nixie {
+  --neon: #ff8a2a;
+  --neon-core: #ffd59a;
+  --wire: #3d2a1c;
+  --brass: #cdb68a;
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 28%, #24170d 0%, #110b07 55%, #070504 100%);
+    color: var(--brass);
+    font-family: 'Oswald Variable', 'Arial Narrow', sans-serif;
+  }
+
+  /* ── tubes ───────────────────────────────────────────── */
+  .tubes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .tubes.small {
+    gap: 5px;
+  }
+  .tube {
+    --w: 104px;
+    --h: 200px;
+    --fs: 168px;
+    position: relative;
+    display: block;
+    width: var(--w);
+    height: var(--h);
+    border-radius: 48px 48px 12px 12px;
+    background: radial-gradient(ellipse at 50% 45%, #1d1109 0%, #0b0705 75%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 220, 180, 0.09),
+      inset 0 -14px 0 #070504,
+      0 6px 18px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+  }
+  .tube.small {
+    --w: 40px;
+    --h: 72px;
+    --fs: 60px;
+    border-radius: 18px 18px 5px 5px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 220, 180, 0.09),
+      inset 0 -5px 0 #070504;
+  }
+  .cathodes > span {
+    position: absolute;
+    inset: 0 0 6px;
+    display: grid;
+    place-items: center;
+    font-size: var(--fs);
+    font-weight: 200;
+    line-height: 1;
+    color: var(--wire);
+    opacity: 0.55;
+    transition:
+      color 0.18s ease-out,
+      text-shadow 0.18s ease-out,
+      opacity 0.18s ease-out;
+  }
+  .cathodes > span.on {
+    z-index: 1;
+    opacity: 1;
+    color: var(--neon-core);
+    text-shadow:
+      0 0 2px #fff1d6,
+      0 0 6px #ffa04a,
+      0 0 14px #ff6a00,
+      0 0 30px rgba(255, 90, 0, 0.55);
+  }
+  /* one tube of the four is a little tired */
+  .tubes.big .tube:nth-child(2) .on {
+    animation: nixie-flicker 7s linear infinite;
+  }
+  /* anode mesh in front of the cathodes */
+  .mesh {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+      repeating-linear-gradient(60deg, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 6px),
+      repeating-linear-gradient(-60deg, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 6px);
+  }
+  .glass {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    background:
+      linear-gradient(90deg, transparent 12%, rgba(255, 255, 255, 0.1) 18%, transparent 27%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 30%);
+  }
+
+  .neon-colon {
+    display: flex;
+    flex-direction: column;
+    gap: 46px;
+    width: 26px;
+    align-items: center;
+  }
+  .tubes.small .neon-colon {
+    gap: 16px;
+    width: 10px;
+  }
+  .neon-colon i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--neon-core), var(--neon) 60%);
+    box-shadow: 0 0 10px var(--neon), 0 0 22px rgba(255, 90, 0, 0.5);
+    transition: opacity 0.12s;
+  }
+  .tubes.small .neon-colon i {
+    width: 6px;
+    height: 6px;
+  }
+  .neon-colon.blink i {
+    opacity: 0.18;
+  }
+
+  /* ── IN-9 bargraph ───────────────────────────────────── */
+  .in9 {
+    position: relative;
+    display: block;
+    width: 520px;
+    height: 18px;
+    border-radius: 9px;
+    background: linear-gradient(#120b07, #1d130c 50%, #0c0806);
+    box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0.1);
+    overflow: hidden;
+  }
+  .in9 .column {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    border-radius: 4px;
+    background: linear-gradient(var(--neon-core), var(--neon));
+    box-shadow: 0 0 8px var(--neon), 0 0 18px rgba(255, 90, 0, 0.6);
+    transition:
+      width 0.4s linear,
+      height 0.4s linear;
+  }
+  .in9.vertical {
+    width: 18px;
+    height: 250px;
+  }
+  .in9.vertical .column {
+    top: auto;
+    bottom: 0;
+    left: 5px;
+    right: 5px;
+  }
+
+  /* ── lamps and plates ────────────────────────────────── */
+  .lamp-unit {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+  .lamp {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #4a3527, #1c130d 70%);
+    box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0.12);
+  }
+  .lamp.on,
+  .lamp.blink {
+    background: radial-gradient(circle at 45% 40%, var(--neon-core), var(--neon) 55%, #a33a00);
+    box-shadow:
+      0 0 10px var(--neon),
+      0 0 22px rgba(255, 90, 0, 0.55);
+  }
+  .lamp.blink {
+    animation: nixie-blink 1.2s steps(1, end) infinite;
+  }
+  .lamp.warn {
+    background: radial-gradient(circle at 45% 40%, #ffd1c2, #ff3d1f 55%, #8a1500);
+    box-shadow: 0 0 12px #ff3d1f;
+    animation: nixie-blink 1s steps(1, end) infinite;
+  }
+  .plate {
+    display: inline-block;
+    padding: 3px 8px 2px;
+    border-radius: 3px;
+    background: linear-gradient(#2e2721, #1a1612);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 1px 0 rgba(0, 0, 0, 0.7);
+    color: var(--brass);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .plate.small {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+  .engraved {
+    color: #e2cfa6;
+    font-size: 19px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .engraved.dim {
+    opacity: 0.5;
+  }
+
+  /* ── timer layout ────────────────────────────────────── */
+  .tube-bay {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .graph-row {
+    position: absolute;
+    top: 252px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+  .lamps {
+    position: absolute;
+    top: 316px;
+    left: 44px;
+    right: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .lamp-group {
+    display: flex;
+    gap: 16px;
+  }
+  .lamp-group.set {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .lamp-group.set .plate {
+    margin-left: 4px;
+  }
+  .readout {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 6px 12px;
+    align-items: center;
+  }
+  .legend,
+  .warning {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .plate.wide {
+    font-size: 13px;
+    padding: 5px 12px 4px;
+  }
+  .mode-paused .tube .on {
+    animation: nixie-blink 1.6s steps(1, end) infinite;
+  }
+
+  .hold-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(255, 110, 20, 0.35), transparent 65%);
+  }
+  .hold-glow.on {
+    animation: nixie-hold 0.7s linear forwards;
+  }
+  .strike {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 30%, rgba(255, 150, 60, 0.7), rgba(255, 80, 0, 0.15) 70%);
+    opacity: 0;
+    animation: nixie-strike 1.4s ease-out;
+  }
+
+  /* ── log layout ──────────────────────────────────────── */
+  .week {
+    position: absolute;
+    top: 26px;
+    left: 40px;
+    display: flex;
+    gap: 26px;
+  }
+  .day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .day:not(.sel) .in9 .column {
+    opacity: 0.45;
+  }
+  .day .plate {
+    min-width: 44px;
+    text-align: center;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .log-side {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .entries {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .entries li {
+    font-size: 16px;
+  }
+  .entries b {
+    font-weight: 500;
+    color: var(--neon-core);
+  }
+}

@@ -6,6 +6,8 @@ import GameboyHistory from './gameboy/History';
 import GameboyTimer from './gameboy/Timer';
 import JournalHistory from './journal/History';
 import JournalTimer from './journal/Timer';
+import NixieHistory from './nixie/History';
+import NixieTimer from './nixie/Timer';
 import SplitflapHistory from './splitflap/History';
 import SplitflapTimer from './splitflap/Timer';
 import TerminalHistory from './terminal/History';
@@ -15,6 +17,7 @@ import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
 import './journal/journal.css';
+import './nixie/nixie.css';
 import './splitflap/splitflap.css';
 import './terminal/terminal.css';
 import '@fontsource-variable/oswald';
@@ -59,6 +62,14 @@ export const THEMES: Theme[] = [
     swatch: ['#121212', '#f7b928'],
     Timer: SplitflapTimer,
     History: SplitflapHistory,
+  },
+  {
+    id: 'nixie',
+    name: 'Nixie',
+    blurb: 'Glowing tubes, neon lamps',
+    swatch: ['#110b07', '#ff8a2a'],
+    Timer: NixieTimer,
+    History: NixieHistory,
   },
   {
     id: 'journal',
