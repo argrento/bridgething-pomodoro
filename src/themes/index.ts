@@ -6,6 +6,8 @@ import GameboyHistory from './gameboy/History';
 import GameboyTimer from './gameboy/Timer';
 import JournalHistory from './journal/History';
 import JournalTimer from './journal/Timer';
+import SplitflapHistory from './splitflap/History';
+import SplitflapTimer from './splitflap/Timer';
 import TerminalHistory from './terminal/History';
 import TerminalTimer from './terminal/Timer';
 import type { Theme } from './types';
@@ -13,7 +15,9 @@ import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
 import './journal/journal.css';
+import './splitflap/splitflap.css';
 import './terminal/terminal.css';
+import '@fontsource-variable/oswald';
 
 export const THEMES: Theme[] = [
   {
@@ -47,6 +51,14 @@ export const THEMES: Theme[] = [
     swatch: ['#9bbc0f', '#0f380f'],
     Timer: GameboyTimer,
     History: GameboyHistory,
+  },
+  {
+    id: 'splitflap',
+    name: 'Split-flap',
+    blurb: 'Departures board, flipping digits',
+    swatch: ['#121212', '#f7b928'],
+    Timer: SplitflapTimer,
+    History: SplitflapHistory,
   },
   {
     id: 'journal',
