@@ -1,33 +1,29 @@
-import { formatDrift } from '../../clock';
-import { formatClock, formatDuration, PHASE_LABEL, phaseMs, SESSIONS_PER_SET } from '../../timer';
+import { formatDrift, formatDuration, PHASE_LABEL } from '../kit';
 import type { TimerView } from '../types';
 import { bar, BigText, bigWidth, boxLines, clock, COLS, Crt, fit, journalStamp, KeyBar, StatusBar, T } from './term';
 
 export default function Timer(v: TimerView) {
-  const { state, now, left, endsAt, today, history, clock: clockStatus } = v;
-  const total = Math.max(phaseMs(state), left);
-  const idle = state.mode === 'idle';
-  const setMin = state.settings[state.phase];
-  const big = idle ? `${String(setMin).padStart(2, '0')}:00` : bigClock(left);
+  const { now, endsAt, today, clock: clockStatus } = v;
+  const idle = v.mode === 'idle';
+  const setMin = v.setMinutes;
+  const big = v.countdown;
   const bigX = Math.floor((52 - bigWidth(big)) / 2) + 1;
-  const frac = idle ? 0 : 1 - left / total;
-  const flag = state.phase === 'focus' ? 'focus' : 'break';
-  const slots = Array.from({ length: SESSIONS_PER_SET }, (_, i) =>
-    i < state.cycle ? '[■]' : i === state.cycle && state.phase === 'focus' && !idle ? '[▸]' : '[ ]',
-  ).join('');
+  const frac = v.progress;
+  const flag = v.phase === 'focus' ? 'focus' : 'break';
+  const slots = v.set.map(x => (x === 'done' ? '[■]' : x === 'live' ? '[▸]' : '[ ]')).join('');
   const rows: [string, string][] = [
-    ['phase', PHASE_LABEL[state.phase].toUpperCase()],
-    ['state', state.mode.toUpperCase()],
+    ['phase', PHASE_LABEL[v.phase].toUpperCase()],
+    ['state', v.mode.toUpperCase()],
     ['set', slots],
-    ['ends', state.mode === 'paused' ? '--:--' : clock(endsAt)],
+    ['ends', v.mode === 'paused' ? '--:--' : clock(endsAt)],
     ['today', `${today.sessions} × ${formatDuration(today.minutes)}`],
     ['streak', `${v.streak}d`],
   ];
-  const tail = history.slice(-4);
+  const tail = v.recent.slice(-4);
 
   return (
-    <div className={`app phase-${state.phase} mode-${state.mode}`}>
-      <StatusBar now={now} middle={`${PHASE_LABEL[state.phase].toUpperCase()} :: ${state.mode.toUpperCase()}`} />
+    <div className={`app phase-${v.phase} mode-${v.mode}`}>
+      <StatusBar now={now} middle={`${PHASE_LABEL[v.phase].toUpperCase()} :: ${v.mode.toUpperCase()}`} />
 
       {clockStatus.kind !== 'ok' && (
         <T x={0} y={1} className="warn" onClick={clockStatus.kind === 'unverified' ? v.trustClock : undefined}>
@@ -46,7 +42,7 @@ export default function Timer(v: TimerView) {
       <T x={bigX} y={10} className="dim">
         {idle
           ? `${setMin === 1 ? 'minute' : 'minutes'} · turn wheel to set`
-          : state.mode === 'paused'
+          : v.mode === 'paused'
             ? 'SIGSTOP · process suspended'
             : 'remaining'}
       </T>
@@ -78,15 +74,15 @@ export default function Timer(v: TimerView) {
             <span className="hold-bar">██████████</span>
             <span className="dim">]</span>
           </>
-        ) : state.mode === 'running' ? (
+        ) : v.mode === 'running' ? (
           <>
             <span className="tag">[ RUN  ]</span> {flag} in progress, ends {clock(endsAt)}
           </>
-        ) : state.mode === 'paused' ? (
+        ) : v.mode === 'paused' ? (
           <span className="blink">
-            <span className="tag">[PAUSED]</span> suspended with {formatClock(left)} left
+            <span className="tag">[PAUSED]</span> suspended with {v.countdown} left
           </span>
-        ) : state.phase === 'focus' ? (
+        ) : v.phase === 'focus' ? (
           <span className="dim">[ WAIT ] press RET to start</span>
         ) : (
           <>
@@ -107,7 +103,7 @@ export default function Timer(v: TimerView) {
           <T key={e.start} x={2} y={18 + i} onClick={v.toggleHistory}>
             <span className="dim">{journalStamp(e.start)} pomodoro: </span>
             <span className={e.done ? 'ok' : 'stop'}>{e.done ? '[  OK  ]' : '[ STOP ]'}</span> focus{' '}
-            {formatDuration(Math.round(e.focusedMs / 60_000)).padEnd(6)}
+            {formatDuration(e.minutes).padEnd(6)}
             <span className="dim">
               {clock(e.start)}→{clock(e.end)}
             </span>
@@ -125,8 +121,8 @@ export default function Timer(v: TimerView) {
         ]}
         actions={[
           ['<->', idle ? 'set' : '±1m'],
-          ['RET', state.mode === 'running' ? 'pause' : state.mode === 'paused' ? 'resume' : 'start'],
-          ['^C', !idle ? 'stop' : state.phase !== 'focus' ? 'skip' : 'reset'],
+          ['RET', { pause: 'pause', resume: 'resume', start: 'start' }[v.actions.press]],
+          ['^C', { stop: 'stop', skip: 'skip', reset: 'reset' }[v.actions.hold]],
         ]}
       />
 
@@ -137,10 +133,3 @@ export default function Timer(v: TimerView) {
 
 }
 
-/** MM:SS, or H:MM once the countdown no longer fits two minute digits. */
-function bigClock(ms: number) {
-  const min = Math.ceil(ms / 1000) / 60;
-  if (min < 100) return formatClock(ms);
-  const h = Math.floor(min / 60);
-  return `${h}:${String(Math.floor(min % 60)).padStart(2, '0')}`;
-}

@@ -1,5 +1,5 @@
+import { formatDuration, hhmm } from '../kit';
 import type { HistoryView } from '../types';
-import { dayTotals, formatDuration, localDay, streak } from '../../timer';
 
 const DAYS = 7;
 const CHART_W = 440;
@@ -11,41 +11,20 @@ const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function dayStart(now: number, back: number): Date {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - back);
-  return d;
-}
 
-const hhmm = (t: number) => {
-  const d = new Date(t);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-};
 
 /**
  * Seven days of focus, in the manner of an e-reader's reading insights.
  * Unselected days are dithered, the selected one solid ink. `selected`
  * counts days back from today; the window follows it.
  */
-export default function History({ history, now, selected, knob }: HistoryView) {
-  const windowEnd = Math.floor(selected / DAYS) * DAYS;
-  const days = Array.from({ length: DAYS }, (_, i) => {
-    const back = windowEnd + DAYS - 1 - i;
-    const date = dayStart(now, back);
-    const key = localDay(date.getTime());
-    return { back, date, key, ...dayTotals(history, key) };
-  });
-  const sel = days.find(d => d.back === selected)!;
-  const max = Math.max(60, ...days.map(d => d.minutes));
+export default function History({ now, days, selected: sel, sessions: entries, week, streak, weeksAgo, knob }: HistoryView) {
+  const max = Math.max(60, week.maxMinutes);
   const plotH = CHART_H - PAD_T - PAD_B;
   const slot = CHART_W / DAYS;
   const y = (min: number) => PAD_T + plotH * (1 - min / max);
-  const weekMin = days.reduce((a, d) => a + d.minutes, 0);
-  const weekSessions = days.reduce((a, d) => a + d.sessions, 0);
   const first = days[0].date;
   const last = days[DAYS - 1].date;
-  const entries = history.filter(e => localDay(e.start) === sel.key).reverse();
 
   return (
     <div className="page" {...knob}>
@@ -56,7 +35,7 @@ export default function History({ history, now, selected, knob }: HistoryView) {
       </header>
 
       <div className="ins-title">
-        <h1>{windowEnd === 0 ? 'This week' : windowEnd === DAYS ? 'Last week' : `${windowEnd / DAYS} weeks ago`}</h1>
+        <h1>{weeksAgo === 0 ? 'This week' : weeksAgo === 1 ? 'Last week' : `${weeksAgo} weeks ago`}</h1>
         <div className="sub">
           {MONTH[first.getMonth()]} {first.getDate()} – {MONTH[last.getMonth()]} {last.getDate()}
         </div>
@@ -64,15 +43,15 @@ export default function History({ history, now, selected, knob }: HistoryView) {
 
       <div className="ins-stats">
         <div>
-          <b>{formatDuration(weekMin)}</b>
+          <b>{formatDuration(week.minutes)}</b>
           <span>focused</span>
         </div>
         <div>
-          <b>{weekSessions}</b>
+          <b>{week.sessions}</b>
           <span>sessions</span>
         </div>
         <div>
-          <b>{streak(history, now)}</b>
+          <b>{streak}</b>
           <span>day streak</span>
         </div>
       </div>
@@ -88,9 +67,9 @@ export default function History({ history, now, selected, knob }: HistoryView) {
         <line x1={0} x2={CHART_W} y1={y(0)} y2={y(0)} className="baseline" />
         {days.map((d, i) => {
           const cx = slot * (i + 0.5);
-          const isSel = d.back === selected;
+          const isSel = d.selected;
           return (
-            <g key={d.key}>
+            <g key={d.back}>
               {d.minutes > 0 && (
                 <rect
                   x={cx - BAR_W / 2}
@@ -135,7 +114,7 @@ export default function History({ history, now, selected, knob }: HistoryView) {
                 <span className="tnum">
                   {hhmm(e.start)}–{hhmm(e.end)}
                 </span>
-                <span>{formatDuration(Math.round(e.focusedMs / 60_000))}</span>
+                <span>{formatDuration(e.minutes)}</span>
                 <em>{e.done ? 'complete' : 'stopped'}</em>
               </li>
             ))}

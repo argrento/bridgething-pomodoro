@@ -1,4 +1,4 @@
-import { dayTotals, formatDuration, hhmm, localDay, streak } from '../../timer';
+import { formatDuration, hhmm } from '../kit';
 import type { HistoryView } from '../types';
 
 const DAYS = 7;
@@ -11,12 +11,6 @@ const BAR_W = 24;
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function dayStart(now: number, back: number): Date {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - back);
-  return d;
-}
 
 function niceStep(max: number): number {
   for (const step of [15, 30, 60, 120, 180]) if (max / step <= 5) return step;
@@ -27,27 +21,16 @@ function niceStep(max: number): number {
  * Results section: Figure 2 plots focus per day as a TikZ-style bar chart
  * (selected day solid, others hatched); Table 2 lists that day's sessions.
  */
-export default function History({ history, now, selected, knob }: HistoryView) {
-  const windowEnd = Math.floor(selected / DAYS) * DAYS;
-  const days = Array.from({ length: DAYS }, (_, i) => {
-    const back = windowEnd + DAYS - 1 - i;
-    const date = dayStart(now, back);
-    const key = localDay(date.getTime());
-    return { back, date, key, ...dayTotals(history, key) };
-  });
-  const sel = days.find(d => d.back === selected)!;
-  const step = niceStep(Math.max(60, ...days.map(d => d.minutes)));
-  const top = Math.ceil(Math.max(60, ...days.map(d => d.minutes)) / step) * step;
+export default function History({ now, days, selected: sel, sessions: entries, week, streak, weeksAgo, knob }: HistoryView) {
+  const step = niceStep(Math.max(60, week.maxMinutes));
+  const top = Math.ceil(Math.max(60, week.maxMinutes) / step) * step;
   const plotH = H - T - B;
   const slot = (W - L) / DAYS;
   const y = (m: number) => T + plotH * (1 - m / top);
   const ticks = Array.from({ length: top / step + 1 }, (_, k) => k * step);
-  const weekMin = days.reduce((a, d) => a + d.minutes, 0);
-  const weekSessions = days.reduce((a, d) => a + d.sessions, 0);
   const first = days[0].date;
   const last = days[DAYS - 1].date;
   const range = `${MONTH[first.getMonth()]} ${first.getDate()}–${MONTH[last.getMonth()]} ${last.getDate()}`;
-  const entries = history.filter(e => localDay(e.start) === sel.key).reverse();
   const selName = `${WEEKDAY[sel.date.getDay()]} ${MONTH[sel.date.getMonth()]} ${sel.date.getDate()}`;
 
   return (
@@ -85,9 +68,9 @@ export default function History({ history, now, selected, knob }: HistoryView) {
           </text>
           {days.map((d, i) => {
             const cx = L + slot * (i + 0.5);
-            const isSel = d.back === selected;
+            const isSel = d.selected;
             return (
-              <g key={d.key}>
+              <g key={d.back}>
                 {d.minutes > 0 && (
                   <rect
                     x={cx - BAR_W / 2}
@@ -120,9 +103,9 @@ export default function History({ history, now, selected, knob }: HistoryView) {
             <span className="secno">4</span>Results
           </h1>
           <p className="abstract">
-            Over the period, {formatDuration(weekMin)} of focus was recorded in {weekSessions}{' '}
-            {weekSessions === 1 ? 'session' : 'sessions'}; the current streak is {streak(history, now)}{' '}
-            {streak(history, now) === 1 ? 'day' : 'days'}.
+            Over the period, {formatDuration(week.minutes)} of focus was recorded in {week.sessions}{' '}
+            {week.sessions === 1 ? 'session' : 'sessions'}; the current streak is {streak}{' '}
+            {streak === 1 ? 'day' : 'days'}.
           </p>
         </section>
 
@@ -153,7 +136,7 @@ export default function History({ history, now, selected, knob }: HistoryView) {
                     <td>
                       {hhmm(e.start)}–{hhmm(e.end)}
                     </td>
-                    <td className="r num">{Math.round(e.focusedMs / 60_000)}</td>
+                    <td className="r num">{e.minutes}</td>
                     <td className="r">{e.done ? '✓' : <i className="roman">aborted</i>}</td>
                   </tr>
                 ))

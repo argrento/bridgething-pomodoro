@@ -1,4 +1,4 @@
-import type { Mode, Phase } from '../../timer';
+import type { Mode, Phase } from '../types';
 
 const W = 460;
 const H = 384;

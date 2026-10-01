@@ -1,10 +1,9 @@
-import { dayTotals, formatDuration, localDay, streak } from '../../timer';
+import { formatDuration } from '../kit';
 import type { HistoryView } from '../types';
 import { textWidth, type Gfx } from './engine';
 import Screen from './Screen';
 import { tomato } from './sprites';
 
-const DAYS = 7;
 const DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAME = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const BASE_Y = 84;
@@ -12,40 +11,23 @@ const MAX_BAR = 26;
 
 const gbDuration = (min: number) => formatDuration(min).replace(' ', '').toUpperCase();
 
-function dayStart(now: number, back: number): Date {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - back);
-  return d;
-}
 
 /** A trainer card: week stats beside the hero, a bar per day, the selected day in the text box. */
-export default function History({ history, now, selected, knob }: HistoryView) {
-  const windowEnd = Math.floor(selected / DAYS) * DAYS;
-  const days = Array.from({ length: DAYS }, (_, i) => {
-    const back = windowEnd + DAYS - 1 - i;
-    const date = dayStart(now, back);
-    const key = localDay(date.getTime());
-    return { back, date, ...dayTotals(history, key) };
-  });
-  const sel = days.find(d => d.back === selected)!;
-  const max = Math.max(60, ...days.map(d => d.minutes));
-  const weekMin = days.reduce((a, d) => a + d.minutes, 0);
-  const wins = days.reduce((a, d) => a + d.sessions, 0);
-  const days_ = streak(history, now);
+export default function History({ now, days, selected: sel, sessions: entries, week, streak, weeksAgo, knob }: HistoryView) {
+  const max = Math.max(60, week.maxMinutes);
 
   const draw = (g: Gfx) => {
     g.clear(0);
     g.box(0, 0, 200, 20);
     g.text('TRAINER CARD', 9, 6);
-    const wk = windowEnd === 0 ? 'THIS WK' : `WK -${windowEnd / DAYS}`;
+    const wk = weeksAgo === 0 ? 'THIS WK' : `WK -${weeksAgo}`;
     g.text(wk, 191 - textWidth(wk), 6, 2);
 
     g.sprite(tomato(false), 10, 24, 2);
     const rows: [string, string][] = [
-      ['TIME', gbDuration(weekMin)],
-      ['WINS', String(wins)],
-      ['STREAK', `${days_} ${days_ === 1 ? 'DAY' : 'DAYS'}`],
+      ['TIME', gbDuration(week.minutes)],
+      ['WINS', String(week.sessions)],
+      ['STREAK', `${streak} ${streak === 1 ? 'DAY' : 'DAYS'}`],
     ];
     rows.forEach(([k, val], i) => {
       g.text(k, 50, 25 + i * 10, 2);
@@ -56,7 +38,7 @@ export default function History({ history, now, selected, knob }: HistoryView) {
     days.forEach((d, i) => {
       const cx = 9 + i * 26 + 13;
       const h = Math.round((d.minutes / max) * MAX_BAR);
-      const isSel = d.back === selected;
+      const isSel = d.selected;
       if (h > 0) g.rect(cx - 6, BASE_Y - h, 12, h, isSel ? 3 : 2);
       if (isSel) {
         const top = BASE_Y - h - 7;

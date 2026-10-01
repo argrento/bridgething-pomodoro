@@ -1,45 +1,41 @@
-import { formatDrift } from '../../clock';
-import { formatClock, hhmm as clock, PHASE_LABEL, SESSIONS_PER_SET } from '../../timer';
+import { formatDrift, hhmm as clock, PHASE_LABEL } from '../kit';
 import type { TimerView } from '../types';
 import Dial from './Dial';
 
 export default function Timer(v: TimerView) {
-  const { state, now, left, endsAt, today, clock: clockStatus } = v;
-  const idle = state.mode === 'idle';
-  const setMin = state.settings[state.phase];
-  const section = { focus: 1, short: 2, long: 3 }[state.phase];
-  const pattern = { focus: 'hatched', short: 'dotted', long: 'cross-hatched' }[state.phase];
-  const rows = Array.from({ length: SESSIONS_PER_SET }, (_, i) => {
-    let status = '—';
-    if (i < state.cycle) status = '✓';
-    else if (i === state.cycle && state.phase === 'focus' && !idle)
-      status = state.mode === 'paused' ? 'suspended' : 'in progress';
-    return { n: i + 1, status, live: status !== '—' && status !== '✓' };
+  const { now, endsAt, today, clock: clockStatus } = v;
+  const idle = v.mode === 'idle';
+  const setMin = v.setMinutes;
+  const section = { focus: 1, short: 2, long: 3 }[v.phase];
+  const pattern = { focus: 'hatched', short: 'dotted', long: 'cross-hatched' }[v.phase];
+  const rows = v.set.map((slot, i) => {
+    const status = slot === 'done' ? '✓' : slot === 'live' ? (v.mode === 'paused' ? 'suspended' : 'in progress') : '—';
+    return { n: i + 1, status, live: slot === 'live' };
   });
 
   return (
-    <div className={`app phase-${state.phase} mode-${state.mode}`}>
+    <div className={`app phase-${v.phase} mode-${v.mode}`}>
       <div key={v.flash} className={v.flash ? 'flash' : ''} />
 
       <header className="runhead">
         <span className="sc">J. Appl. Chronometry</span>
         <span>
-          <i>Vol.</i> 1, <i>No.</i> {Math.min(state.cycle + 1, SESSIONS_PER_SET)} &nbsp;·&nbsp; {clock(now)}
+          <i>Vol.</i> 1, <i>No.</i> {Math.min(v.cycle + 1, v.set.length)} &nbsp;·&nbsp; {clock(now)}
         </span>
       </header>
 
       <figure className="fig" {...v.knob}>
         <Dial
-          minutes={left / 60_000}
-          phase={state.phase}
-          mode={state.mode}
-          primary={idle ? String(setMin) : formatClock(left)}
-          secondary={idle ? (setMin === 1 ? 'minute' : 'minutes') : state.mode === 'paused' ? '(suspended)' : 'remaining'}
+          minutes={v.leftMs / 60_000}
+          phase={v.phase}
+          mode={v.mode}
+          primary={idle ? String(setMin) : v.countdown}
+          secondary={idle ? (setMin === 1 ? 'minute' : 'minutes') : v.mode === 'paused' ? '(suspended)' : 'remaining'}
           holding={v.holding}
           bump={v.bump}
         />
         <figcaption>
-          <b>Figure 1.</b> Remaining time Δ<i>t</i> of the {PHASE_LABEL[state.phase].toLowerCase()} interval; the{' '}
+          <b>Figure 1.</b> Remaining time Δ<i>t</i> of the {PHASE_LABEL[v.phase].toLowerCase()} interval; the{' '}
           {pattern} sector is proportional to Δ<i>t</i>. One detent of the knob equals 1 min.
         </figcaption>
       </figure>
@@ -48,7 +44,7 @@ export default function Timer(v: TimerView) {
         <section>
           <h1>
             <span className="secno">{section}</span>
-            {PHASE_LABEL[state.phase]}
+            {PHASE_LABEL[v.phase]}
           </h1>
           {clockStatus.kind !== 'ok' ? (
             <p
@@ -69,10 +65,10 @@ export default function Timer(v: TimerView) {
             </p>
           ) : (
           <p className="abstract">
-            {state.mode === 'running' && <>Interval in progress; concludes at {clock(endsAt)}.</>}
-            {state.mode === 'paused' && <>Interval suspended with {formatClock(left)} remaining.</>}
+            {v.mode === 'running' && <>Interval in progress; concludes at {clock(endsAt)}.</>}
+            {v.mode === 'paused' && <>Interval suspended with {v.countdown} remaining.</>}
             {idle &&
-              (state.phase === 'focus' ? (
+              (v.phase === 'focus' ? (
                 <>Awaiting commencement. Set Δ<i>t</i> = {setMin} min.</>
               ) : (
                 <>Focus concluded. Break of {setMin} min proposed.</>
@@ -99,7 +95,7 @@ export default function Timer(v: TimerView) {
               {rows.map(r => (
                 <tr key={r.n} className={r.live ? 'live' : ''}>
                   <td>Focus {r.n}</td>
-                  <td className="r num">{state.settings.focus}</td>
+                  <td className="r num">{v.focusMinutes}</td>
                   <td className="r">{r.live ? <i>{r.status}</i> : r.status}</td>
                 </tr>
               ))}
@@ -127,12 +123,12 @@ export default function Timer(v: TimerView) {
             </li>
             <li>
               <b>press</b> knob
-              <span className="cmt">▷ {state.mode === 'running' ? 'pause' : state.mode === 'paused' ? 'resume' : 'start'}</span>
+              <span className="cmt">▷ {{ pause: 'pause', resume: 'resume', start: 'start' }[v.actions.press]}</span>
             </li>
             <li>
               <b>hold</b> knob
               <span className="cmt">
-                ▷ {!idle ? 'stop' : state.phase !== 'focus' ? 'skip break' : 'reset set'}
+                ▷ {{ stop: 'stop', skip: 'skip break', reset: 'reset set' }[v.actions.hold]}
               </span>
             </li>
             <li>

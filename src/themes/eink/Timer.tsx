@@ -1,20 +1,19 @@
+import { formatDrift, formatDuration, hhmm, PHASE_LABEL } from '../kit';
 import { useEffect, useRef, useState } from 'react';
-import { formatDrift } from '../../clock';
-import { formatDuration, hhmm, PHASE_LABEL, SESSIONS_PER_SET } from '../../timer';
 import type { TimerView } from '../types';
 
 export default function Timer(v: TimerView) {
-  const { state, now, left, endsAt, today, clock: clockStatus } = v;
+  const { now, endsAt, today, clock: clockStatus } = v;
   // E-ink pacing: the numeral changes once a minute; seconds only in the last one.
-  const idle = state.mode === 'idle';
-  const setMin = state.settings[state.phase];
-  const lastMinute = !idle && left < 60_000;
-  const big = idle ? setMin : lastMinute ? Math.ceil(left / 1000) : Math.ceil(left / 60_000);
-  const remainingMin = idle ? setMin : Math.ceil(left / 60_000);
+  const idle = v.mode === 'idle';
+  const setMin = v.setMinutes;
+  const lastMinute = !idle && v.minutesLeft <= 1;
+  const big = idle ? setMin : lastMinute ? v.secondsLeft : v.minutesLeft;
+  const remainingMin = idle ? setMin : v.minutesLeft;
   const dotCount = Math.min(90, Math.max(setMin, remainingMin));
 
   return (
-    <div className={`page phase-${state.phase} mode-${state.mode}`}>
+    <div className={`page phase-${v.phase} mode-${v.mode}`}>
       <header className="masthead">
         <span className="sc">Pomodoro</span>
         <span className="tnum">{hhmm(now)}</span>
@@ -22,9 +21,9 @@ export default function Timer(v: TimerView) {
 
       <main className="leaf" {...v.knob}>
         <div className="kicker">
-          {PHASE_LABEL[state.phase]}
-          {state.mode === 'paused' && <em> — paused</em>}
-          {idle && state.phase !== 'focus' && <em> — up next</em>}
+          {PHASE_LABEL[v.phase]}
+          {v.mode === 'paused' && <em> — paused</em>}
+          {idle && v.phase !== 'focus' && <em> — up next</em>}
         </div>
         <div className="numeral">
           <Ghost value={big} />
@@ -34,7 +33,7 @@ export default function Timer(v: TimerView) {
           {lastMinute
             ? 'seconds remaining'
             : idle
-              ? `${setMin === 1 ? 'minute' : 'minutes'} of ${state.phase === 'focus' ? 'focus' : 'rest'}`
+              ? `${setMin === 1 ? 'minute' : 'minutes'} of ${v.phase === 'focus' ? 'focus' : 'rest'}`
               : `${remainingMin === 1 ? 'minute' : 'minutes'} remaining`}
         </div>
         <div className={`hold-rule${v.holding ? ' on' : ''}`} />
@@ -67,19 +66,14 @@ export default function Timer(v: TimerView) {
           <dt>Session</dt>
           <dd>
             <span className="squares">
-              {Array.from({ length: SESSIONS_PER_SET }, (_, i) => (
-                <i
-                  key={i}
-                  className={
-                    i < state.cycle ? 'done' : i === state.cycle && state.phase === 'focus' && !idle ? 'live' : ''
-                  }
-                />
+              {v.set.map((x, i) => (
+                <i key={i} className={x} />
               ))}
             </span>
-            {Math.min(state.cycle + 1, SESSIONS_PER_SET)} of {SESSIONS_PER_SET}
+            {Math.min(v.cycle + 1, v.set.length)} of {v.set.length}
           </dd>
-          <dt>{state.mode === 'running' ? 'Ends at' : 'Would end'}</dt>
-          <dd className="tnum">{state.mode === 'paused' ? '—' : hhmm(endsAt)}</dd>
+          <dt>{v.mode === 'running' ? 'Ends at' : 'Would end'}</dt>
+          <dd className="tnum">{v.mode === 'paused' ? '—' : hhmm(endsAt)}</dd>
           <dt onClick={v.toggleHistory}>Today</dt>
           <dd onClick={v.toggleHistory}>
             {formatDuration(today.minutes)} · {today.sessions} {today.sessions === 1 ? 'session' : 'sessions'}
@@ -90,8 +84,8 @@ export default function Timer(v: TimerView) {
           </dd>
         </dl>
         <p className="colophon">
-          {idle ? 'Turn to set' : 'Turn to adjust'} · Press to {state.mode === 'running' ? 'pause' : state.mode === 'paused' ? 'resume' : 'begin'} · Hold to{' '}
-          {!idle ? 'stop' : state.phase !== 'focus' ? 'skip' : 'reset'} · 4 history · M design
+          {idle ? 'Turn to set' : 'Turn to adjust'} · Press to {{ pause: 'pause', resume: 'resume', start: 'begin' }[v.actions.press]} · Hold to{' '}
+          {{ stop: 'stop', skip: 'skip', reset: 'reset' }[v.actions.hold]} · 4 history · M design
         </p>
       </aside>
 

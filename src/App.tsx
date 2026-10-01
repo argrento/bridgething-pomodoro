@@ -1,20 +1,17 @@
 import { BridgethingClient } from '@bridgething/client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { assessClock, TOLERANCE_MS } from './clock';
+import { historyModel, timerModel } from './model';
 import Settings from './Settings';
 import { DEFAULT_THEME, themeById, THEMES } from './themes';
 import {
   complete,
-  dayTotals,
   decodeHistory,
   encodeHistory,
   hold,
   initialState,
-  localDay,
   press,
-  remainingMs,
   setPreset,
-  streak,
   turn,
   type HistoryEntry,
   type TimerState,
@@ -291,7 +288,6 @@ export default function App() {
     };
   }, [pressDown, pressUp, toggleHistory, toggleSettings]);
 
-  const left = remainingMs(state, now);
   const clockStatus = assessClock({
     phoneDriftMs,
     lastLoggedEnd: history.length ? history[history.length - 1].end : null,
@@ -307,23 +303,10 @@ export default function App() {
     <div className="stage">
       <div className={`theme-${theme.id}`}>
         {view === 'history' ? (
-          <theme.History history={history} now={now} selected={histSel} knob={knob} />
+          <theme.History {...historyModel(history, now, histSel, knob)} />
         ) : (
           <theme.Timer
-            state={state}
-            now={now}
-            left={left}
-            endsAt={state.mode === 'running' ? state.endsAt : now + left}
-            today={dayTotals(history, localDay(now))}
-            streak={streak(history, now)}
-            history={history}
-            clock={clockStatus}
-            holding={holding}
-            flash={flash}
-            bump={bump}
-            knob={knob}
-            trustClock={trustClock}
-            toggleHistory={toggleHistory}
+            {...timerModel(state, now, clockStatus, { holding, flash, bump, knob, trustClock, toggleHistory })}
           />
         )}
       </div>

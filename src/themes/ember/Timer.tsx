@@ -1,36 +1,29 @@
-import { formatDrift } from '../../clock';
-import { formatClock, formatDuration, hhmm, PHASE_LABEL, phaseMs, SESSIONS_PER_SET } from '../../timer';
+import { formatDrift, formatDuration, hhmm, PHASE_LABEL } from '../kit';
 import type { TimerView } from '../types';
 import Dial from './Dial';
 
 export default function Timer(v: TimerView) {
-  const { state, now, left, endsAt, today, clock: clockStatus } = v;
-  const total = Math.max(phaseMs(state), left);
-  const dots = Array.from({ length: SESSIONS_PER_SET }, (_, i) => {
-    if (i < state.cycle) return 'done';
-    if (i === state.cycle && state.phase === 'focus' && state.mode !== 'idle') return 'live';
-    return '';
-  });
+  const { now, endsAt, today, clock: clockStatus } = v;
 
   return (
-    <div className={`app phase-${state.phase} mode-${state.mode}`}>
+    <div className={`app phase-${v.phase} mode-${v.mode}`}>
       <div className="glow" />
       <div key={v.flash} className={v.flash ? 'flash' : ''} />
 
       <div className="dial-wrap" {...v.knob}>
-        <Dial minutes={left / 60_000} holding={v.holding} />
+        <Dial minutes={v.leftMs / 60_000} holding={v.holding} />
         <div className="center">
-          {state.mode === 'idle' ? (
+          {v.mode === 'idle' ? (
             <>
               <div key={v.bump} className="big bump">
-                {state.settings[state.phase]}
+                {v.setMinutes}
               </div>
-              <div className="unit">{state.settings[state.phase] === 1 ? 'minute' : 'minutes'}</div>
+              <div className="unit">{v.setMinutes === 1 ? 'minute' : 'minutes'}</div>
             </>
           ) : (
             <>
-              <div className="clock">{formatClock(left)}</div>
-              <div className="unit">{state.mode === 'paused' ? 'paused' : PHASE_LABEL[state.phase]}</div>
+              <div className="clock">{v.countdown}</div>
+              <div className="unit">{v.mode === 'paused' ? 'paused' : PHASE_LABEL[v.phase]}</div>
             </>
           )}
         </div>
@@ -40,7 +33,7 @@ export default function Timer(v: TimerView) {
         {clockStatus.kind === 'ok' ? (
           <div className="now">
             <span>{hhmm(now)}</span>
-            <span className="ends">{state.mode === 'paused' ? 'on hold' : `ends ${hhmm(endsAt)}`}</span>
+            <span className="ends">{v.mode === 'paused' ? 'on hold' : `ends ${hhmm(endsAt)}`}</span>
           </div>
         ) : (
           <div
@@ -65,18 +58,18 @@ export default function Timer(v: TimerView) {
 
         <div className="phase">
           <div className="eyebrow">
-            {state.mode === 'idle' ? (state.phase === 'focus' ? 'Ready' : 'Up next') : 'Now'}
+            {v.mode === 'idle' ? (v.phase === 'focus' ? 'Ready' : 'Up next') : 'Now'}
           </div>
-          <h1>{PHASE_LABEL[state.phase]}</h1>
+          <h1>{PHASE_LABEL[v.phase]}</h1>
           <div className="dots">
-            {dots.map((d, i) => (
+            {v.set.map((d, i) => (
               <span key={i} className={`dot ${d}`} />
             ))}
           </div>
           <div className="progress-track">
             <div
               className="progress-fill"
-              style={{ transform: `scaleX(${state.mode === 'idle' ? 0 : 1 - left / total})` }}
+              style={{ transform: `scaleX(${v.mode === 'idle' ? 0 : v.progress})` }}
             />
           </div>
         </div>
@@ -95,15 +88,15 @@ export default function Timer(v: TimerView) {
         <ul className="hints">
           <li>
             <i className="ico ico-turn" />
-            {state.mode === 'idle' ? 'Turn to set time' : 'Turn to add or remove a minute'}
+            {v.mode === 'idle' ? 'Turn to set time' : 'Turn to add or remove a minute'}
           </li>
           <li>
             <i className="ico ico-press" />
-            {state.mode === 'running' ? 'Press to pause' : state.mode === 'paused' ? 'Press to resume' : 'Press to start'}
+            {{ pause: 'Press to pause', resume: 'Press to resume', start: 'Press to start' }[v.actions.press]}
           </li>
           <li>
             <i className="ico ico-hold" />
-            {state.mode !== 'idle' ? 'Hold to stop' : state.phase !== 'focus' ? 'Hold to skip break' : 'Hold to reset set'}
+            {{ stop: 'Hold to stop', skip: 'Hold to skip break', reset: 'Hold to reset set' }[v.actions.hold]}
           </li>
           <li>
             <i className="ico ico-key">4</i>

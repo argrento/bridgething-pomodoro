@@ -1,5 +1,5 @@
+import { formatDuration, hhmm } from '../kit';
 import type { HistoryView } from '../types';
-import { dayTotals, formatDuration, localDay, streak } from '../../timer';
 
 const DAYS = 7;
 const CHART_W = 470;
@@ -11,12 +11,6 @@ const BAR_W = 26;
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-function dayStart(now: number, back: number): Date {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - back);
-  return d;
-}
 
 /** Gridline step that gives two to four lines for the window's busiest day. */
 function niceStep(max: number): number {
@@ -24,26 +18,13 @@ function niceStep(max: number): number {
   return 360;
 }
 
-const hhmm = (t: number) => {
-  const d = new Date(t);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-};
 
 /**
  * Seven-day view of the on-device session log. `selected` counts days back
  * from today; the window scrolls so the selected day is always on screen.
  */
-export default function History({ history, now, selected, knob }: HistoryView) {
-  // Window: the 7 days ending at the newest day that keeps `selected` visible.
-  const windowEnd = Math.floor(selected / DAYS) * DAYS;
-  const days = Array.from({ length: DAYS }, (_, i) => {
-    const back = windowEnd + DAYS - 1 - i;
-    const date = dayStart(now, back);
-    const key = localDay(date.getTime());
-    return { back, date, key, ...dayTotals(history, key) };
-  });
-  const sel = days.find(d => d.back === selected)!;
-  const max = Math.max(60, ...days.map(d => d.minutes));
+export default function History({ now, days, selected: sel, sessions: entries, week, streak, weeksAgo, knob }: HistoryView) {
+  const max = Math.max(60, week.maxMinutes);
   const step = niceStep(max);
   const top = Math.ceil(max / step) * step;
   const plotH = CHART_H - PAD_T - PAD_B;
@@ -51,11 +32,8 @@ export default function History({ history, now, selected, knob }: HistoryView) {
   const y = (min: number) => PAD_T + plotH * (1 - min / top);
   const grid = Array.from({ length: top / step + 1 }, (_, k) => k * step);
 
-  const weekMin = days.reduce((a, d) => a + d.minutes, 0);
-  const weekSessions = days.reduce((a, d) => a + d.sessions, 0);
   const first = days[0].date;
   const last = days[DAYS - 1].date;
-  const entries = history.filter(e => localDay(e.start) === sel.key).reverse();
 
   return (
     <div className="app phase-focus" {...knob}>
@@ -70,15 +48,15 @@ export default function History({ history, now, selected, knob }: HistoryView) {
         </div>
         <div className="h-stats">
           <div>
-            <b>{formatDuration(weekMin)}</b>
+            <b>{formatDuration(week.minutes)}</b>
             <span>focused</span>
           </div>
           <div>
-            <b>{weekSessions}</b>
+            <b>{week.sessions}</b>
             <span>sessions</span>
           </div>
           <div>
-            <b>{streak(history, now)}</b>
+            <b>{streak}</b>
             <span>day streak</span>
           </div>
         </div>
@@ -98,9 +76,9 @@ export default function History({ history, now, selected, knob }: HistoryView) {
         {days.map((d, i) => {
           const cx = PAD_L + slot * (i + 0.5);
           const h = y(0) - y(d.minutes);
-          const isSel = d.back === selected;
+          const isSel = d.selected;
           return (
-            <g key={d.key} className={isSel ? 'h-day sel' : 'h-day'}>
+            <g key={d.back} className={isSel ? 'h-day sel' : 'h-day'}>
               {isSel && <rect x={cx - slot / 2 + 3} y={PAD_T - 18} width={slot - 6} height={plotH + 18 + PAD_B - 2} rx={10} className="h-sel" />}
               {d.minutes > 0 && (
                 // Rounded data end, square at the baseline.
@@ -141,7 +119,7 @@ export default function History({ history, now, selected, knob }: HistoryView) {
                 <span className="h-time">
                   {hhmm(e.start)}–{hhmm(e.end)}
                 </span>
-                <span className="h-dur">{formatDuration(Math.round(e.focusedMs / 60_000))}</span>
+                <span className="h-dur">{formatDuration(e.minutes)}</span>
                 <span className="h-mark">{e.done ? '✓' : 'stopped'}</span>
               </li>
             ))}
