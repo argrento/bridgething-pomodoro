@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('../../../node_modules/@fontsource/press-start-2p/files/press-start-2p-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+}
+
+.theme-gameboy {
+  background: #0f380f;
+
+  .gb-root,
+  .gb {
+    position: absolute;
+    inset: 0;
+  }
+  /* 200×120 logical pixels, ×4, nearest-neighbour */
+  .lcd {
+    display: block;
+    width: 800px;
+    height: 480px;
+    image-rendering: pixelated;
+  }
+  /* faint LCD pixel grid, like the real screen; static */
+  .gb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(to right, rgba(15, 56, 15, 0.12) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(to bottom, rgba(15, 56, 15, 0.12) 0 1px, transparent 1px 4px);
+  }
+  .hit {
+    position: absolute;
+    z-index: 1;
+  }
+  .hit-dialogue {
+    left: 0;
+    top: 336px;
+    width: 800px;
+    height: 144px;
+  }
+  .hit-status {
+    left: 336px;
+    top: 144px;
+    width: 464px;
+    height: 184px;
+  }
+}

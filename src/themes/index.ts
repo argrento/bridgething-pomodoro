@@ -2,6 +2,8 @@ import EinkHistory from './eink/History';
 import EinkTimer from './eink/Timer';
 import EmberHistory from './ember/History';
 import EmberTimer from './ember/Timer';
+import GameboyHistory from './gameboy/History';
+import GameboyTimer from './gameboy/Timer';
 import JournalHistory from './journal/History';
 import JournalTimer from './journal/Timer';
 import TerminalHistory from './terminal/History';
@@ -9,6 +11,7 @@ import TerminalTimer from './terminal/Timer';
 import type { Theme } from './types';
 import './eink/eink.css';
 import './ember/ember.css';
+import './gameboy/gameboy.css';
 import './journal/journal.css';
 import './terminal/terminal.css';
 
@@ -36,6 +39,14 @@ export const THEMES: Theme[] = [
     swatch: ['#0a0905', '#ffb000'],
     Timer: TerminalTimer,
     History: TerminalHistory,
+  },
+  {
+    id: 'gameboy',
+    name: 'Game Boy',
+    blurb: 'Pixel battle against WORK',
+    swatch: ['#9bbc0f', '#0f380f'],
+    Timer: GameboyTimer,
+    History: GameboyHistory,
   },
   {
     id: 'journal',

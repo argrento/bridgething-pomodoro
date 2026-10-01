@@ -12,6 +12,7 @@
     "@bridgething/client": "^0.8.0",
     "@fontsource-variable/literata": "^5.3.0",
     "@fontsource-variable/outfit": "^5.1.0",
+    "@fontsource/press-start-2p": "^5.3.0",
     "jetbrains-mono": "^1.0.6",
     "katex": "^0.19.0",
     "react": "^19.0.0",
