@@ -1,5 +1,7 @@
 import AsciiHistory from './ascii/History';
 import AsciiTimer from './ascii/Timer';
+import BackroomsHistory from './backrooms/History';
+import BackroomsTimer from './backrooms/Timer';
 import DoomHistory from './doom/History';
 import DoomTimer from './doom/Timer';
 import EinkHistory from './eink/History';
@@ -18,6 +20,7 @@ import TerminalHistory from './terminal/History';
 import TerminalTimer from './terminal/Timer';
 import type { Theme } from './types';
 import './ascii/ascii.css';
+import './backrooms/backrooms.css';
 import './doom/doom.css';
 import './eink/eink.css';
 import './ember/ember.css';
@@ -92,6 +95,14 @@ export const THEMES: Theme[] = [
     swatch: ['#1e0302', '#e01e18'],
     Timer: DoomTimer,
     History: DoomHistory,
+  },
+  {
+    id: 'backrooms',
+    name: 'Backrooms',
+    blurb: 'Found footage: focus in Level 0',
+    swatch: ['#c4b25e', '#f02a1e'],
+    Timer: BackroomsTimer,
+    History: BackroomsHistory,
   },
   {
     id: 'journal',

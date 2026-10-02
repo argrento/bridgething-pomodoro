@@ -1,0 +1,42 @@
+.theme-backrooms {
+  background: #000;
+
+  .backrooms-root,
+  .tape {
+    position: absolute;
+    inset: 0;
+  }
+  /* 240×144 upscaled smoothly: soft like tape, not crisp like pixels */
+  .video {
+    display: block;
+    width: 800px;
+    height: 480px;
+    image-rendering: auto;
+    filter: saturate(1.08) contrast(1.04);
+  }
+  /* static scanlines and lens vignette; no animation, so no repaint cost */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.16) 2px 3px),
+      radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.5) 100%);
+  }
+  .hit {
+    position: absolute;
+    z-index: 1;
+  }
+  .hit-clock {
+    left: 0;
+    top: 90px;
+    width: 800px;
+    height: 50px;
+  }
+  .hit-tape {
+    right: 0;
+    top: 0;
+    width: 220px;
+    height: 100px;
+  }
+}
