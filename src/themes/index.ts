@@ -12,6 +12,8 @@ import GameboyHistory from './gameboy/History';
 import GameboyTimer from './gameboy/Timer';
 import JournalHistory from './journal/History';
 import JournalTimer from './journal/Timer';
+import MineHistory from './mine/History';
+import MineTimer from './mine/Timer';
 import NixieHistory from './nixie/History';
 import NixieTimer from './nixie/Timer';
 import SplitflapHistory from './splitflap/History';
@@ -26,6 +28,7 @@ import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
 import './journal/journal.css';
+import './mine/mine.css';
 import './nixie/nixie.css';
 import './splitflap/splitflap.css';
 import './terminal/terminal.css';
@@ -103,6 +106,14 @@ export const THEMES: Theme[] = [
     swatch: ['#c4b25e', '#f02a1e'],
     Timer: BackroomsTimer,
     History: BackroomsHistory,
+  },
+  {
+    id: 'mine',
+    name: 'Mineshaft',
+    blurb: 'Dig one block per minute',
+    swatch: ['#6aa0f0', '#5aa038'],
+    Timer: MineTimer,
+    History: MineHistory,
   },
   {
     id: 'journal',

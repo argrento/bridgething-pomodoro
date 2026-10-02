@@ -1,0 +1,32 @@
+.theme-mine {
+  background: #000;
+
+  .mine-root,
+  .mine {
+    position: absolute;
+    inset: 0;
+  }
+  /* 200×120, ×4, nearest-neighbour: crisp blocks */
+  .blocks {
+    display: block;
+    width: 800px;
+    height: 480px;
+    image-rendering: pixelated;
+  }
+  .hit {
+    position: absolute;
+    z-index: 1;
+  }
+  .hit-chat {
+    left: 0;
+    top: 340px;
+    width: 500px;
+    height: 44px;
+  }
+  .hit-bar {
+    left: 150px;
+    top: 420px;
+    width: 500px;
+    height: 60px;
+  }
+}
