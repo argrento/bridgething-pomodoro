@@ -95,7 +95,8 @@ export function timerModel(
     secondsLeft: Math.ceil(leftMs / 1000),
     endsAt,
     set,
-    cycle: s.cycle,
+    // saved states from before the long-break fix may hold more than a full set
+    cycle: Math.min(s.cycle, SESSIONS_PER_SET),
     schedule: schedule(s, now, endsAt),
     today: dayTotals(s.history, localDay(now)),
     streak: streak(s.history, now),

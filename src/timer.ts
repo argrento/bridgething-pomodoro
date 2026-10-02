@@ -140,9 +140,10 @@ export function hold(s: TimerState, now: number): TimerState {
       s.phase === 'focus' && focusedMs >= MIN_LOGGED_MS
         ? log(s, { start: s.startedAt, end: s.mode === 'paused' ? s.pausedAt : now, focusedMs, done: false })
         : s.history;
-    return { ...s, mode: 'idle', history };
+    // a long break ends the set whether it runs out or is cut short
+    return { ...s, mode: 'idle', history, cycle: s.phase === 'long' ? 0 : s.cycle };
   }
-  if (s.phase !== 'focus') return { ...s, phase: 'focus' };
+  if (s.phase !== 'focus') return { ...s, phase: 'focus', cycle: s.phase === 'long' ? 0 : s.cycle };
   return { ...s, cycle: 0 };
 }
 
