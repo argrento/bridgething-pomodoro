@@ -4,6 +4,8 @@ import BackroomsHistory from './backrooms/History';
 import BackroomsTimer from './backrooms/Timer';
 import DoomHistory from './doom/History';
 import DoomTimer from './doom/Timer';
+import EcamHistory from './ecam/History';
+import EcamTimer from './ecam/Timer';
 import EinkHistory from './eink/History';
 import EinkTimer from './eink/Timer';
 import EmberHistory from './ember/History';
@@ -24,6 +26,7 @@ import type { Theme } from './types';
 import './ascii/ascii.css';
 import './backrooms/backrooms.css';
 import './doom/doom.css';
+import './ecam/ecam.css';
 import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
@@ -114,6 +117,14 @@ export const THEMES: Theme[] = [
     swatch: ['#6aa0f0', '#5aa038'],
     Timer: MineTimer,
     History: MineHistory,
+  },
+  {
+    id: 'ecam',
+    name: 'Cockpit',
+    blurb: 'Jetliner engine display: fly each focus as a leg',
+    swatch: ['#000000', '#3cf04e'],
+    Timer: EcamTimer,
+    History: EcamHistory,
   },
   {
     id: 'journal',

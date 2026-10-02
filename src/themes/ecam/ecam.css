@@ -1,0 +1,191 @@
+@font-face {
+  font-family: 'B612';
+  src: url('../../../node_modules/@fontsource/b612/files/b612-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'B612';
+  src: url('../../../node_modules/@fontsource/b612/files/b612-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+}
+@font-face {
+  font-family: 'B612 Mono';
+  src: url('../../../node_modules/@fontsource/b612-mono/files/b612-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+}
+
+.theme-ecam {
+  --green: #3cf04e;
+  --cyan: #1ad8ef;
+  --white: #e6e6e6;
+  --amber: #ffab1f;
+  --magenta: #ff5ce8;
+  --red: #ff3b30;
+  --rule: #9a9a9a;
+
+  .ecam {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #000;
+    color: var(--white);
+    font-family: 'B612', 'Arial', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .tone-green { color: var(--green); }
+  .tone-cyan { color: var(--cyan); }
+  .tone-white { color: var(--white); }
+  .tone-amber { color: var(--amber); }
+  .tone-magenta { color: var(--magenta); }
+  .dim { opacity: 0.25; }
+
+  /* flight mode annunciator */
+  .fma {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    display: grid;
+    grid-template-columns: 150px 170px 170px 140px 170px;
+    border-bottom: 2px solid var(--rule);
+  }
+  .fma-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    border-right: 2px solid var(--rule);
+    font-size: 18px;
+    line-height: 1.1;
+  }
+  .fma-col:last-child { border-right: 0; }
+  .fma-main { padding: 0 6px; border: 2px solid transparent; }
+  .fma-main.boxed { border-color: var(--white); }
+  .fma-main.flash { background: var(--amber); color: #000; }
+  .fma-armed { font-size: 15px; }
+
+  /* engine gauges */
+  .ewd {
+    position: absolute;
+    left: 0;
+    top: 54px;
+    width: 470px;
+    height: 268px;
+    overflow: visible;
+  }
+  .ewd text { font-family: 'B612', sans-serif; }
+  .scale { fill: none; stroke: var(--white); stroke-width: 2.5; }
+  .band { fill: none; stroke-width: 4.5; }
+  .band.amber { stroke: var(--amber); }
+  .band.red { stroke: var(--red); }
+  .tick { stroke: var(--white); stroke-width: 2; }
+  .tick-label { fill: var(--white); font-size: 13px; }
+  .limit { fill: var(--cyan); }
+  .needle {
+    transform-box: view-box;
+    transition: transform 1.4s cubic-bezier(0.3, 0.7, 0.3, 1);
+  }
+  .needle line { stroke: var(--green); stroke-width: 3.5; stroke-linecap: round; }
+  .hub { fill: var(--green); }
+  .readout-box { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+  .readout { fill: var(--green); font-family: 'B612 Mono', monospace !important; font-size: 21px; }
+  .gauge.off .needle line, .gauge.off .hub { stroke: #777; fill: #777; }
+  .gauge.off .readout { fill: #888; }
+  .label { fill: var(--cyan); font-size: 16px; }
+  .unit { fill: var(--cyan); font-size: 13px; }
+  .value { fill: var(--green); font-family: 'B612 Mono', monospace !important; font-size: 19px; }
+
+  /* right panel: thrust limit, the countdown, the leg */
+  .side {
+    position: absolute;
+    left: 482px;
+    right: 12px;
+    top: 58px;
+    height: 262px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .thr-limit {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 22px;
+  }
+  .thr-limit .unit { font-size: 15px; }
+  .ete-label { margin-top: 6px; font-size: 15px; }
+  .ete {
+    font-family: 'B612', sans-serif;
+    font-size: 88px;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .phase-name { font-size: 15px; letter-spacing: 0.12em; }
+  .legs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 17px;
+  }
+  .pips { display: inline-flex; gap: 5px; }
+  .pips i { width: 14px; height: 10px; border: 2px solid var(--cyan); }
+  .pips i.done { background: var(--green); border-color: var(--green); }
+  .pips i.live { border-color: var(--white); background: var(--white); }
+  .kv { display: flex; justify-content: space-between; font-size: 15px; }
+  .kv span:last-child { font-family: 'B612 Mono', monospace; }
+
+  /* lower part: memos left, inhibits and cautions right */
+  .memo {
+    position: absolute;
+    top: 330px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 470px 1fr;
+    border-top: 2px solid var(--rule);
+    font-size: 19px;
+    line-height: 1.32;
+  }
+  .memo-left, .memo-right { padding: 10px 18px; white-space: pre; }
+  .memo-right { border-left: 2px solid var(--rule); }
+  .callout { font-size: 54px; font-weight: 700; color: var(--white); letter-spacing: 0.06em; }
+
+  .master-caut {
+    position: absolute;
+    top: 60px;
+    right: 14px;
+    padding: 6px 12px;
+    border: 3px solid var(--amber);
+    background: rgba(255, 171, 31, 0.18);
+    color: var(--amber);
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.05;
+    text-align: center;
+  }
+  .hold-msg {
+    position: absolute;
+    left: 0;
+    width: 470px;
+    top: 430px;
+    text-align: center;
+    font-size: 20px;
+  }
+
+  /* tech log */
+  .log { padding: 14px 22px; font-size: 18px; }
+  .log-title { display: flex; justify-content: space-between; border-bottom: 2px solid var(--rule); padding-bottom: 6px; font-size: 22px; }
+  .log-head, .log-row { display: grid; grid-template-columns: 210px 70px 120px 1fr; align-items: center; height: 30px; }
+  .log-head { font-size: 14px; margin-top: 6px; }
+  .log-row { white-space: pre; font-family: 'B612 Mono', monospace; font-size: 17px; }
+  .log-row.sel { outline: 2px solid var(--cyan); outline-offset: -2px; }
+  .bar { height: 10px; }
+  .bar i { display: block; height: 100%; background: var(--green); }
+  .log-legs { margin-top: 8px; border-top: 2px solid var(--rule); padding-top: 6px; font-size: 16px; line-height: 1.35; font-family: 'B612 Mono', monospace; }
+  .log-foot { position: absolute; left: 22px; right: 22px; bottom: 10px; display: flex; gap: 10px; font-size: 15px; }
+}
