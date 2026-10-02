@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { THEMES } from './themes';
 
 /**
@@ -13,11 +14,18 @@ export default function Settings({
   current: string;
   onPick: (index: number) => void;
 }) {
+  // The list is taller than the screen: keep the picked row in view as the knob turns.
+  const list = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const row = list.current?.children.item(picked) as HTMLElement | null;
+    row?.scrollIntoView({ block: 'nearest' });
+  }, [picked]);
+
   return (
     <div className="settings">
       <div className="settings-card">
         <div className="settings-title">Design</div>
-        <ul>
+        <ul ref={list}>
           {THEMES.map((t, i) => (
             <li
               key={t.id}
