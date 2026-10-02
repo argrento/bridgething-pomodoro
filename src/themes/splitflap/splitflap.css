@@ -1,14 +1,14 @@
 @keyframes splitflap-fold {
   to {
-    transform: rotateX(-90deg);
+    transform: scaleY(0);
   }
 }
 @keyframes splitflap-unfold {
   from {
-    transform: rotateX(90deg);
+    transform: scaleY(0);
   }
   to {
-    transform: rotateX(0deg);
+    transform: scaleY(1);
   }
 }
 @keyframes splitflap-blink {
@@ -62,7 +62,6 @@
     width: var(--cw);
     height: var(--ch);
     margin-right: 2px;
-    perspective: 220px;
     font-size: var(--fs);
     text-align: center;
     vertical-align: top;
@@ -73,7 +72,6 @@
     --fs: 116px;
     --r: 8px;
     margin-right: 0;
-    perspective: 600px;
     font-weight: 500;
   }
   .flap::after {
@@ -92,7 +90,6 @@
     right: 0;
     height: 50%;
     overflow: hidden;
-    backface-visibility: hidden;
   }
   .half > span {
     position: absolute;
@@ -117,6 +114,9 @@
   .half.bottom > span {
     bottom: 0;
   }
+  /* The fold is a 2D squash about the split line, which reads the same as a
+     falling flap seen head-on. A real rotateX with perspective cost ~20% CPU
+     on the Car Thing's GPU while the seconds flipped; this costs ~9%. */
   .fold {
     z-index: 3;
     transform-origin: 50% 100%;
@@ -125,7 +125,7 @@
   .unfold {
     z-index: 4;
     transform-origin: 50% 0;
-    transform: rotateX(90deg);
+    transform: scaleY(0);
     animation: splitflap-unfold calc(var(--flip, 240ms) / 2) ease-out calc(var(--flip, 240ms) / 2) forwards;
   }
   .flaps {
@@ -189,6 +189,7 @@
     background: var(--chars);
   }
   .mode-paused .sf-big {
+    will-change: opacity;
     animation: splitflap-blink 1.6s steps(1, end) infinite;
   }
 

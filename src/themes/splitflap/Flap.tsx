@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 /** The order characters sit on a real flap drum. */
 const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:.-/!?+';
@@ -27,7 +27,16 @@ function path(from: string, to: string): string[] {
  * down while the new bottom half swings into place. With `riffle`, it walks
  * the drum through the characters in between, like a Solari board.
  */
-export function Flap({ ch, riffle = true, className }: { ch: string; riffle?: boolean; className?: string }) {
+// Memoised: the app re-renders 4×/s and the board has ~200 cells; only changed cells should render.
+export const Flap = memo(function Flap({
+  ch,
+  riffle = true,
+  className,
+}: {
+  ch: string;
+  riffle?: boolean;
+  className?: string;
+}) {
   const target = norm(ch);
   const [cur, setCur] = useState(target);
   const [next, setNext] = useState<string | null>(null);
@@ -80,10 +89,10 @@ export function Flap({ ch, riffle = true, className }: { ch: string; riffle?: bo
       )}
     </span>
   );
-}
+});
 
 /** A row of flaps showing `text`, padded or cut to `len` cells. */
-export function FlapText({
+export const FlapText = memo(function FlapText({
   text,
   len,
   riffle = true,
@@ -102,4 +111,4 @@ export function FlapText({
       ))}
     </span>
   );
-}
+});
