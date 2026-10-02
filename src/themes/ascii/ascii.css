@@ -9,8 +9,7 @@
 }
 @keyframes ascii-ember {
   50% {
-    color: #ff7a1a;
-    text-shadow: 0 0 8px rgba(255, 90, 0, 0.8);
+    opacity: 1;
   }
 }
 
@@ -73,10 +72,18 @@
   .logs {
     color: #9a6634;
   }
-  .phase-short .logs,
-  .phase-long .logs,
-  .mode-paused .logs {
-    animation: ascii-ember 2.4s ease-in-out infinite;
+  /* Embers: only opacity animates, so the GPU compositor does it without
+     repainting text. (Animating color/text-shadow here cost ~30% CPU.) */
+  .logs-glow {
+    color: #ff7a1a;
+    text-shadow: 0 0 8px rgba(255, 90, 0, 0.8);
+    opacity: 0;
+    will-change: opacity;
+  }
+  .phase-short .logs-glow,
+  .phase-long .logs-glow,
+  .mode-paused .logs-glow {
+    animation: ascii-ember 2.4s steps(8, end) infinite;
   }
   .ground {
     color: #3c4a2a;

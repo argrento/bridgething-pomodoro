@@ -41,6 +41,9 @@ const join = (g: string[][]) => g.map(r => r.join('')).join('\n');
  * `level` is the fire's strength: 0 unlit, ~0.15 embers, 1 full.
  * `burst` changing triggers a flare-up with a shower of sparks.
  */
+const LOGS =
+  '                                        __/\\____/\\____/\\__\n                                       (____________________)';
+
 const box = (row: number) => ({ top: `${row * 14}px`, left: `${FIRE_LEFT_COL * 8}px`, width: `${FW * 8}px` });
 
 export default function Campfire({ level, smoke, burst }: { level: number; smoke: boolean; burst: number }) {
@@ -164,7 +167,11 @@ export default function Campfire({ level, smoke, burst }: { level: number; smoke
       <pre ref={fireRef} className="layer fire" style={box(FIRE_BOTTOM_ROW - FH)} />
       <pre ref={sparkRef} className="layer sparks" style={box(PARTICLE_TOP_ROW)} />
       <pre className="layer logs" style={{ top: `${FIRE_BOTTOM_ROW * 14}px` }}>
-        {'                                        __/\\____/\\____/\\__\n                                       (____________________)'}
+        {LOGS}
+      </pre>
+      {/* glowing copy whose opacity pulses: compositor-only, no repaint */}
+      <pre className="layer logs-glow" style={{ top: `${FIRE_BOTTOM_ROW * 14}px` }}>
+        {LOGS}
       </pre>
       <pre className="layer ground" style={{ top: `${(FIRE_BOTTOM_ROW + 2) * 14}px` }}>
         {`.,"'.,;'".,`.repeat(10).slice(0, COLS)}
