@@ -1,5 +1,7 @@
 import AsciiHistory from './ascii/History';
 import AsciiTimer from './ascii/Timer';
+import DoomHistory from './doom/History';
+import DoomTimer from './doom/Timer';
 import EinkHistory from './eink/History';
 import EinkTimer from './eink/Timer';
 import EmberHistory from './ember/History';
@@ -16,6 +18,7 @@ import TerminalHistory from './terminal/History';
 import TerminalTimer from './terminal/Timer';
 import type { Theme } from './types';
 import './ascii/ascii.css';
+import './doom/doom.css';
 import './eink/eink.css';
 import './ember/ember.css';
 import './gameboy/gameboy.css';
@@ -81,6 +84,14 @@ export const THEMES: Theme[] = [
     swatch: ['#06060c', '#ff8a1c'],
     Timer: AsciiTimer,
     History: AsciiHistory,
+  },
+  {
+    id: 'doom',
+    name: 'Doom',
+    blurb: 'Walk the corridor to the exit',
+    swatch: ['#1e0302', '#e01e18'],
+    Timer: DoomTimer,
+    History: DoomHistory,
   },
   {
     id: 'journal',

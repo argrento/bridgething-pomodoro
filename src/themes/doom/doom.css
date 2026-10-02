@@ -1,0 +1,31 @@
+.theme-doom {
+  background: #000;
+
+  .doom-root,
+  .doom {
+    position: absolute;
+    inset: 0;
+  }
+  /* 200×120 framebuffer, ×4, nearest-neighbour */
+  .vga {
+    display: block;
+    width: 800px;
+    height: 480px;
+    image-rendering: pixelated;
+  }
+  .hit {
+    position: absolute;
+    z-index: 1;
+  }
+  .hit-warn {
+    left: 0;
+    width: 800px;
+    height: 40px;
+  }
+  .hit-bar {
+    left: 0;
+    top: 352px;
+    width: 800px;
+    height: 128px;
+  }
+}
