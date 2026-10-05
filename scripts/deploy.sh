@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-DEVICE="${DEVICE:-REDACTED}"
+# Pass your Car Thing's adb serial: DEVICE=<serial> npm run deploy
+DEVICE="${DEVICE:?set DEVICE to your adb device serial (see: adb devices)}"
 APPDIR="54868c4c1a364680a16b426eb379f171"
 TARGET="/var/bridgething/webapps/$APPDIR"
 

@@ -1,0 +1,38 @@
+name: Release
+
+# Tag a commit and push the tag to cut a release:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # Zip the deployable webapp: unzip into the device's
+      # /var/bridgething/webapps/<app-id>/ directory.
+      - name: Package webapp
+        run: |
+          cd dist
+          zip -r "../pomodoro-webapp-${GITHUB_REF_NAME}.zip" .
+
+      - name: Publish release with artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pomodoro-webapp-*.zip
+          generate_release_notes: true
