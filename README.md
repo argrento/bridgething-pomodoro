@@ -1,12 +1,15 @@
-# Pomodoro
+<p align="center">
+  <img src="docs/logo.svg" width="440" alt="Pomodoro for Spotify Car Thing">
+</p>
 
 A focus timer for the Spotify Car Thing, with a shelf of swappable visual
 designs. Turn the wheel to set the time, press to start, hold to stop. Sessions
 are logged on the device so you can see today's focus, your streak, and the week
 behind you.
 
-The Car Thing runs it as a bridgething webapp: a small React app served off the
-device, driven by its rotary encoder and buttons on an 800x480 screen.
+The Car Thing runs it as a [bridgething](#bridgething) webapp: a small React app
+served off the device, driven by its rotary encoder and buttons on an 800x480
+screen.
 
 ## Designs
 
@@ -96,6 +99,30 @@ desktop development where there is no daemon. Keys:
 - `pomodoro.clock-trust.v1` — the boot id on which the clock was last confirmed
 
 Completion chimes use whichever device earcon looks like a notification sound.
+
+## bridgething
+
+[bridgething](https://github.com/JoeyEamigh/bridgething) is a community platform
+that turns the discontinued Spotify Car Thing into a programmable device. A
+daemon runs on the device, serves small web apps, and exposes a typed client SDK
+([`@bridgething/client`](https://www.npmjs.com/package/@bridgething/client), MIT)
+that a webapp uses to talk to the hardware over a local WebSocket. More at
+[bridgething.com](https://bridgething.com).
+
+This project is one such webapp. It ships a `public/manifest.json` (app id, name,
+icon, permissions) and uses these SDK surfaces:
+
+- **store** — per-app key/value persistence (timer state, history, chosen design,
+  the clock-trust marker)
+- **time** — the paired phone's wall clock, to sanity-check the device's
+  RTC-less clock
+- **system** — boot diagnostics (the boot id), part of the clock-trust logic
+- **capabilities** — discovers the device's available notification earcons
+- **audio** — plays an earcon when a session completes
+
+Deploying means pushing the built `dist/` into
+`/var/bridgething/webapps/<app-id>/` over `adb` and restarting the bridgething
+service; see [`scripts/deploy.sh`](scripts/deploy.sh).
 
 ## Development
 
