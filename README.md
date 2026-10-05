@@ -2,6 +2,10 @@
   <img src="docs/logo.svg" width="440" alt="Pomodoro for Spotify Car Thing">
 </p>
 
+<p align="center">
+  <a href="https://argrento.github.io/bridgething-pomodoro/"><b>Live showcase &amp; docs &raquo;</b></a>
+</p>
+
 A focus timer for the Spotify Car Thing, with a shelf of swappable visual
 designs. Turn the wheel to set the time, press to start, hold to stop. Sessions
 are logged on the device so you can see today's focus, your streak, and the week

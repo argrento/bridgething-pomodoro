@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pomodoro for Car Thing &mdash; Technical docs</title>
+  <meta name="description" content="How the Pomodoro Car Thing app works: timer state machine, clock-trust, architecture, storage, and the bridgething SDK.">
+  <meta name="theme-color" content="#0c0a0b">
+  <link rel="icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Outfit:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <a class="brand" href="index.html" style="text-decoration:none">Pomodoro<span class="dot">.</span></a>
+      <span class="links">
+        <a href="index.html">Home</a>
+        <a href="index.html#designs">Designs</a>
+        <a class="gh" href="https://github.com/argrento/bridgething-pomodoro">GitHub</a>
+      </span>
+    </div>
+  </nav>
+
+  <section class="prose">
+    <div class="wrap">
+      <h1 style="font-size:clamp(30px,6vw,44px);margin:36px 0 6px">Technical docs</h1>
+      <p class="lead">How the app is built, from the pure timer logic to the device it runs on.</p>
+
+      <div class="toc">
+        <h3>Contents</h3>
+        <ol>
+          <li><a href="#hardware">Hardware &amp; controls</a></li>
+          <li><a href="#cycle">The Pomodoro cycle</a></li>
+          <li><a href="#state">Timer state machine</a></li>
+          <li><a href="#clock">Clock trust</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#storage">Storage &amp; persistence</a></li>
+          <li><a href="#sdk">bridgething SDK</a></li>
+          <li><a href="#deploy">Build &amp; deploy</a></li>
+        </ol>
+      </div>
+
+      <h2 id="hardware">Hardware &amp; controls</h2>
+      <p>The Car Thing is an 800&times;480 landscape touchscreen with a rotary encoder
+        (the wheel), a press-in knob, four buttons along the top, a mic button and a back
+        button. Chromium on the device delivers the encoder as horizontal wheel events;
+        one detent is a delta of 120.</p>
+      <table>
+        <tr><th>Input</th><th>Timer</th><th>Picker / History</th></tr>
+        <tr><td>Turn wheel</td><td>Idle: set the duration. Running: add / remove whole minutes</td><td>Move through designs / scroll days</td></tr>
+        <tr><td>Press knob</td><td>Start, pause or resume</td><td>Apply design / back to timer</td></tr>
+        <tr><td>Hold knob (700&nbsp;ms)</td><td>Stop the active phase, or skip a waiting break</td><td>&mdash;</td></tr>
+        <tr><td>Buttons 1&nbsp;/&nbsp;2&nbsp;/&nbsp;3</td><td>Presets 15 / 25 / 45 min</td><td>&mdash;</td></tr>
+        <tr><td>Button 4</td><td>Toggle history</td><td>Toggle history</td></tr>
+        <tr><td>Mic button</td><td>Open the design picker</td><td>Close</td></tr>
+        <tr><td>Back button</td><td>&mdash;</td><td>Close</td></tr>
+      </table>
+
+      <h2 id="cycle">The Pomodoro cycle</h2>
+      <p>A set is four focus sessions. After each focus session comes a short break;
+        after the fourth, a long break, then the set starts over.</p>
+      <ul>
+        <li><b>Defaults</b> &mdash; 25&nbsp;min focus, 5&nbsp;min short break, 15&nbsp;min long break.</li>
+        <li><b>Ranges</b> &mdash; focus 1&ndash;90, short 1&ndash;30, long 5&ndash;60 minutes.</li>
+        <li>Focus flows straight into its break. A finished break waits idle, so the next
+          focus starts on purpose.</li>
+        <li>Breaks chain from the instant the previous phase <em>ended</em>, not from when
+          the tick noticed &mdash; a 5-minute break is exactly five minutes and never shows 05:01.</li>
+        <li>Stopping or skipping a long break ends the set and resets the count.</li>
+      </ul>
+
+      <h2 id="state">Timer state machine</h2>
+      <p>All timer logic is a pure module (<code>timer.ts</code>) &mdash; no React, no device
+        calls. State has a <code>mode</code> (<code>idle</code> / <code>running</code> /
+        <code>paused</code>) and a <code>phase</code> (<code>focus</code> / <code>short</code> /
+        <code>long</code>). Times are stored as epoch timestamps, so a throttled or
+        backgrounded page catches up correctly instead of drifting.</p>
+      <pre><code>// one detent of the wheel; press / hold handlers
+export function press(s, now) {
+  switch (s.mode) {
+    case 'idle':    return { ...s, mode: 'running', endsAt: now + phaseMs(s), startedAt: now };
+    case 'running': return { ...s, mode: 'paused', remaining: s.endsAt - now, pausedAt: now };
+    case 'paused':  return { ...s, mode: 'running', endsAt: now + s.remaining,
+                             pausedTotal: s.pausedTotal + (now - s.pausedAt) };
+  }
+}</code></pre>
+      <p>When a running phase reaches its end, <code>complete()</code> chains focus into its
+        break from the exact end instant and logs the finished session; a finished break
+        returns to idle.</p>
+
+      <h2 id="clock">Clock trust</h2>
+      <p>The Car Thing has no battery-backed real-time clock. A systemd guard saves the time
+        every few minutes and restores it at boot, so after a power-off the clock resumes
+        behind by however long the device was off &mdash; and nothing on the device can tell
+        how long that was. The app judges whether the clock is believable, strongest
+        evidence first:</p>
+      <ol>
+        <li>the paired phone's wall clock, when the gateway supplies one (authoritative);</li>
+        <li>a logged session that ends in the &ldquo;future&rdquo; &mdash; the clock went backwards;</li>
+        <li>the boot id &mdash; a clock confirmed on a boot stays trusted until the next boot.</li>
+      </ol>
+      <p>Differences under two minutes are treated as ordinary drift. The status resolves to
+        <code>ok</code>, <code>unverified</code> (rebooted since last confirmed), or
+        <code>behind</code> by a known amount, which designs surface as an unobtrusive warning
+        rather than silently logging against a wrong time.</p>
+
+      <h2 id="architecture">Architecture</h2>
+      <p>Timer logic and presentation are kept apart, so a design never touches the clock.</p>
+      <ul>
+        <li><code>timer.ts</code> &mdash; the pure state machine: <code>press</code>,
+          <code>turn</code>, <code>hold</code>, <code>complete</code>, and history encoding.</li>
+        <li><code>model.ts</code> &mdash; derives a view model from that state: countdown string,
+          progress, the upcoming schedule, streak and today's totals, all pre-computed.</li>
+        <li><code>src/themes/&lt;id&gt;/</code> &mdash; each design renders only that view model,
+          plus a matching history screen. Adding one is a folder and a single registry entry.</li>
+        <li><code>App.tsx</code> &mdash; wires device input (wheel, knob, buttons) to the state
+          machine, runs the 250&nbsp;ms tick, and handles persistence.</li>
+      </ul>
+
+      <h2 id="storage">Storage &amp; persistence</h2>
+      <p>State is persisted through the bridgething daemon's per-app store, with
+        <code>localStorage</code> as a fallback for the moment before the socket settles and
+        for desktop development where there is no daemon. Timer writes are debounced
+        (~400&nbsp;ms); history is rewritten only when it changes.</p>
+      <table>
+        <tr><th>Key</th><th>Holds</th></tr>
+        <tr><td><code>pomodoro.v1</code></td><td>timer state</td></tr>
+        <tr><td><code>pomodoro.history.v1</code></td><td>session history, compact array form</td></tr>
+        <tr><td><code>pomodoro.theme.v1</code></td><td>selected design</td></tr>
+        <tr><td><code>pomodoro.clock-trust.v1</code></td><td>boot id the clock was last confirmed on</td></tr>
+      </table>
+      <p>History is stored in a tight wire form &mdash; <code>[startSec, endSec, focusedSec, done]</code>
+        per session &mdash; and capped at 3000 entries (roughly a year at eight sessions a day).</p>
+
+      <h2 id="sdk">bridgething SDK</h2>
+      <p>The app talks to the on-device daemon through <code>@bridgething/client</code> over a
+        local WebSocket (<code>ws://&lt;host&gt;/</code>). Surfaces it uses:</p>
+      <table>
+        <tr><th>Surface</th><th>Used for</th></tr>
+        <tr><td><code>store</code></td><td>per-app key/value persistence (the four keys above)</td></tr>
+        <tr><td><code>time</code></td><td>the phone's wall clock, to check the device clock</td></tr>
+        <tr><td><code>system</code></td><td>boot diagnostics (the boot id) for clock trust</td></tr>
+        <tr><td><code>capabilities</code></td><td>discovering the device's notification earcons</td></tr>
+        <tr><td><code>audio</code></td><td>playing an earcon when a session completes</td></tr>
+      </table>
+      <p>A <code>public/manifest.json</code> declares the app id, name, icon and permissions.</p>
+
+      <h2 id="deploy">Build &amp; deploy</h2>
+      <pre><code>npm install
+npm run dev            # vite, size the window to 800x480
+npm run build          # tsc --noEmit, then vite build -> dist/
+DEVICE=&lt;adb-serial&gt; npm run deploy</code></pre>
+      <p>Deploy pushes the built <code>dist/</code> into
+        <code>/var/bridgething/webapps/&lt;app-id&gt;/</code> over <code>adb</code> and restarts
+        the bridgething service. On desktop, keyboard stands in for the hardware: Enter/Space is
+        the knob, 1&ndash;4 the top buttons, M the design picker, Escape back, and a trackpad's
+        horizontal scroll is the wheel.</p>
+
+      <p style="margin-top:40px"><a class="btn" href="index.html">&larr; Back to overview</a></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>Pomodoro for Spotify Car Thing</span>
+      <span class="sep">&middot;</span>
+      <a href="https://github.com/argrento/bridgething-pomodoro">source</a>
+      <span class="sep">&middot;</span>
+      <a href="https://github.com/JoeyEamigh/bridgething">bridgething</a>
+      <span class="sep">&middot;</span>
+      <span>MIT licensed</span>
+    </div>
+  </footer>
+</body>
+</html>
