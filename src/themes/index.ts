@@ -3,8 +3,6 @@ import AsciiTimer from './ascii/Timer';
 import BackroomsHistory from './backrooms/History';
 import BackroomsTimer from './backrooms/Timer';
 import DoomHistory from './doom/History';
-import DskyHistory from './dsky/History';
-import DskyTimer from './dsky/Timer';
 import DoomTimer from './doom/Timer';
 import EcamHistory from './ecam/History';
 import EcamTimer from './ecam/Timer';
@@ -28,7 +26,6 @@ import type { Theme } from './types';
 import './ascii/ascii.css';
 import './backrooms/backrooms.css';
 import './doom/doom.css';
-import './dsky/dsky.css';
 import './ecam/ecam.css';
 import './eink/eink.css';
 import './ember/ember.css';
@@ -128,14 +125,6 @@ export const THEMES: Theme[] = [
     swatch: ['#000000', '#3cf04e'],
     Timer: EcamTimer,
     History: EcamHistory,
-  },
-  {
-    id: 'dsky',
-    name: 'Apollo DSKY',
-    blurb: 'Guidance computer: land each focus on the Moon',
-    swatch: ['#0a0d0b', '#7dff8f'],
-    Timer: DskyTimer,
-    History: DskyHistory,
   },
   {
     id: 'journal',
