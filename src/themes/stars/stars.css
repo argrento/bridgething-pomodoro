@@ -1,0 +1,198 @@
+.theme-stars {
+  --ink: #e8ecf5;
+
+  .stars,
+  .sky {
+    position: absolute;
+    inset: 0;
+    background: #04050a;
+    color: var(--ink);
+    font-family: 'Outfit Variable', system-ui, sans-serif;
+  }
+  .sky canvas {
+    position: absolute;
+    inset: 0;
+    width: 800px;
+    height: 480px;
+  }
+
+  /* ---- timer ---- */
+  .stars-ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  /* glowing status line; space kept when hidden so the digits never move */
+  .status {
+    margin-bottom: 18px;
+    color: #cfe0ff;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.42em;
+    padding-left: 0.42em; /* balance the trailing letter-space */
+    text-transform: uppercase;
+    text-shadow:
+      0 0 8px rgba(140, 180, 255, 0.9),
+      0 0 22px rgba(110, 160, 255, 0.6);
+    opacity: 0;
+    transition:
+      opacity 1.2s ease,
+      color 2.5s ease,
+      text-shadow 2.5s ease;
+  }
+  .status.on {
+    opacity: 0.9;
+  }
+  .resting .status {
+    color: #ffd6a0;
+    text-shadow:
+      0 0 8px rgba(255, 170, 90, 0.95),
+      0 0 22px rgba(255, 140, 60, 0.6);
+  }
+  .count {
+    display: flex;
+    transition:
+      opacity 0.7s ease,
+      color 2.5s ease;
+    font-size: 150px;
+    font-weight: 200;
+    line-height: 1;
+    opacity: 0.92;
+    text-shadow: 0 0 24px rgba(4, 5, 10, 0.9);
+  }
+  /* fixed cells so the digits never shuffle as the seconds change */
+  .count span {
+    display: inline-block;
+    width: 0.56em;
+    text-align: center;
+  }
+  .count span.colon {
+    width: 0.28em;
+    transform: translateY(-0.06em);
+  }
+  .count.paused {
+    opacity: 0.4;
+  }
+  .count.holding {
+    opacity: 0.2;
+  }
+  .set {
+    display: flex;
+    gap: 14px;
+    margin-top: 26px;
+  }
+  .set i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(232, 236, 245, 0.16);
+  }
+  .set i.done,
+  .set i.live {
+    background: rgba(232, 236, 245, 0.6);
+  }
+  /* ---- resting: parked by a warm star, charging ---- */
+  .sun {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 90% 70% at 50% 115%, rgba(255, 168, 92, 0.6), rgba(255, 140, 70, 0.18) 45%, transparent 75%);
+    opacity: 0;
+    transition: opacity 2.5s ease;
+  }
+  .resting .sun {
+    opacity: 1;
+  }
+  .resting .count {
+    color: #ffdcb0;
+  }
+  .charge {
+    width: 260px;
+    height: 3px;
+    margin-top: 28px;
+    border-radius: 2px;
+    background: rgba(255, 220, 176, 0.14);
+    overflow: hidden;
+  }
+  .charge i {
+    display: block;
+    height: 100%;
+    background: rgba(255, 210, 150, 0.85);
+    transition: width 1s linear;
+  }
+  .note {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    text-align: center;
+    color: rgba(255, 205, 140, 0.8);
+    font-size: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---- history ---- */
+  .log {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+  }
+  .log-head,
+  .log-hint {
+    color: rgba(232, 236, 245, 0.5);
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+  .log-hint {
+    font-size: 14px;
+    color: rgba(232, 236, 245, 0.35);
+  }
+  .week {
+    display: flex;
+    gap: 10px;
+  }
+  .day {
+    width: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-radius: 10px;
+    color: rgba(232, 236, 245, 0.55);
+    font-size: 15px;
+  }
+  .day b {
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 300;
+  }
+  .day.empty b {
+    color: rgba(232, 236, 245, 0.25);
+  }
+  .day.sel {
+    background: rgba(232, 236, 245, 0.08);
+    color: var(--ink);
+  }
+  .sessions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-height: 120px;
+    text-align: center;
+    color: rgba(232, 236, 245, 0.8);
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .sessions .stopped,
+  .sessions .none {
+    color: rgba(232, 236, 245, 0.35);
+  }
+}

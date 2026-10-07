@@ -19,6 +19,8 @@ import MineTimer from './mine/Timer';
 import NixieHistory from './nixie/History';
 import NixieTimer from './nixie/Timer';
 import SplitflapHistory from './splitflap/History';
+import StarsHistory from './stars/History';
+import StarsTimer from './stars/Timer';
 import SplitflapTimer from './splitflap/Timer';
 import TerminalHistory from './terminal/History';
 import TerminalTimer from './terminal/Timer';
@@ -34,6 +36,7 @@ import './journal/journal.css';
 import './mine/mine.css';
 import './nixie/nixie.css';
 import './splitflap/splitflap.css';
+import './stars/stars.css';
 import './terminal/terminal.css';
 import '@fontsource-variable/oswald';
 
@@ -125,6 +128,14 @@ export const THEMES: Theme[] = [
     swatch: ['#000000', '#3cf04e'],
     Timer: EcamTimer,
     History: EcamHistory,
+  },
+  {
+    id: 'stars',
+    name: 'Starfield',
+    blurb: 'Jump to lightspeed, then drift through the stars',
+    swatch: ['#04050a', '#e8ecf5'],
+    Timer: StarsTimer,
+    History: StarsHistory,
   },
   {
     id: 'journal',
