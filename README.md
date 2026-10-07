@@ -17,7 +17,7 @@ screen.
 
 ## Designs
 
-Twelve designs, switchable at any time from the design picker. They share one
+Thirteen designs, switchable at any time from the design picker. They share one
 timer and one history; only the presentation changes.
 
 | | | |
@@ -25,7 +25,8 @@ timer and one history; only the presentation changes.
 | <img src="docs/shots/ember.webp" width="260" alt="Ember"><br>**Ember**<br>Warm glow, Time Timer dial (default) | <img src="docs/shots/eink.webp" width="260" alt="E-ink"><br>**E-ink**<br>Calm paper, minute by minute | <img src="docs/shots/terminal.webp" width="260" alt="Terminal"><br>**Terminal**<br>80x24 phosphor, block digits |
 | <img src="docs/shots/gameboy.webp" width="260" alt="Game Boy"><br>**Game Boy**<br>Pixel battle against WORK | <img src="docs/shots/splitflap.webp" width="260" alt="Split-flap"><br>**Split-flap**<br>Departures board, flipping digits | <img src="docs/shots/nixie.webp" width="260" alt="Nixie"><br>**Nixie**<br>Glowing tubes, neon lamps |
 | <img src="docs/shots/ascii.webp" width="260" alt="ASCII campfire"><br>**ASCII campfire**<br>Text-art fire that burns down | <img src="docs/shots/doom.webp" width="260" alt="Doom"><br>**Doom**<br>Walk the corridor to the exit | <img src="docs/shots/backrooms.webp" width="260" alt="Backrooms"><br>**Backrooms**<br>Found footage, focus in Level 0 |
-| <img src="docs/shots/mine.webp" width="260" alt="Mineshaft"><br>**Mineshaft**<br>Dig one block per minute | <img src="docs/shots/ecam.webp" width="260" alt="Cockpit"><br>**Cockpit**<br>Jetliner engine display, fly each focus as a leg | <img src="docs/shots/journal.webp" width="260" alt="Journal"><br>**Journal**<br>Computer Modern and TikZ |
+| <img src="docs/shots/mine.webp" width="260" alt="Mineshaft"><br>**Mineshaft**<br>Dig one block per minute | <img src="docs/shots/ecam.webp" width="260" alt="Cockpit"><br>**Cockpit**<br>Jetliner engine display, fly each focus as a leg | <img src="docs/shots/dsky.webp" width="260" alt="Apollo DSKY"><br>**Apollo DSKY**<br>Guidance computer, land each focus on the Moon |
+| <img src="docs/shots/journal.webp" width="260" alt="Journal"><br>**Journal**<br>Computer Modern and TikZ | | |
 
 ## Controls
 
